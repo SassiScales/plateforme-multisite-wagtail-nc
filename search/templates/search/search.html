@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load wagtailcore_tags wagtailroutablepage_tags %}
 {% block title %}{% if search_query %}« {{ search_query }} » : résultats{% else %}Rechercher{% endif %}{% endblock %}
 {% block content %}
-<section class="bandeau-page">
+<section class="bandeau-page"><div class="bandeau-lignes" aria-hidden="true">{% include "carte_nc.svg" %}</div>
   <div class="cadre">
     <h1>Rechercher</h1>
     <form class="heros-recherche heros-recherche-page" action="{% url 'search' %}" method="get" role="search">

@@ -47,6 +47,9 @@ CORPS = [
     ("tableau", TableauBlock()),
 ]
 
+PICTOS = [("", "Aucun"), ("douane", "Douane et commerce"), ("sante", "Santé"), ("emploi", "Emploi et concours"),
+          ("actualites", "Actualités"), ("donnees", "Textes et données")]
+
 GABARITS = [("standard", "Standard (colonne de lecture)"), ("large", "Large (tableaux, données)"),
             ("accueil", "Accueil de site (chapô et rubriques)")]
 
@@ -54,10 +57,12 @@ GABARITS = [("standard", "Standard (colonne de lecture)"), ("large", "Large (tab
 class PageContenu(RoutablePageMixin, Page):
     chapo = models.TextField("chapô", blank=True, help_text="Réponse courte à la question de l'usager ; reprise par les moteurs")
     gabarit = models.CharField(max_length=20, choices=GABARITS, default="standard")
+    pictogramme = models.CharField(max_length=20, choices=PICTOS, blank=True, default="",
+                                   help_text="Pictogramme affiché sur la tuile de la rubrique, à l'accueil")
     corps = StreamField(CORPS, blank=True, use_json_field=True)
 
     content_panels = Page.content_panels + [FieldPanel("chapo"), FieldPanel("corps")]
-    settings_panels = Page.settings_panels + [FieldPanel("gabarit")]
+    settings_panels = Page.settings_panels + [FieldPanel("gabarit"), FieldPanel("pictogramme")]
     search_fields = Page.search_fields + [index.SearchField("chapo"), index.SearchField("corps")]
 
     class Meta:

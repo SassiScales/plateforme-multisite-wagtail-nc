@@ -67,12 +67,12 @@ class Command(BaseCommand):
             corps=[para("<p>Cette page d'accueil de démonstration est gérée dans le même back-office que le site de la DRH. "
                         "Les démarches restent sur <a href=\"https://service-public.nc\">service-public.nc</a>.</p>")]))
         tarifs = gouv.add_child(instance=PageContenu(
-            title="Tarifs douaniers", slug="tarifs-douaniers", gabarit="large", show_in_menus=True,
+            title="Tarifs douaniers", slug="tarifs-douaniers", pictogramme="douane", gabarit="large", show_in_menus=True,
             chapo="Les chapitres du tarif douanier, lus en direct sur data.gouv.nc et consultables sans téléchargement.",
             corps=[tableau(douane, "Chapitres du tarif douanier", [("hs2_cod", "Chapitre"), ("hs2_dsc", "Libellé"), ("hs1_cod", "Section")],
                            [("hs2_cod", "Chapitre"), ("hs2_dsc", "Libellé"), ("hs1_cod", "Section"), ("valid_from", "En vigueur depuis")])]))
         gouv.add_child(instance=PageContenu(
-            title="Prix des médicaments", slug="prix-des-medicaments", gabarit="large", show_in_menus=True,
+            title="Prix des médicaments", slug="prix-des-medicaments", pictogramme="sante", gabarit="large", show_in_menus=True,
             chapo="Prix de vente des médicaments en Nouvelle-Calédonie (Nouméa, brousse, îles), selon la base Sempex.",
             corps=[("alerte", {"niveau": "info", "message": RichText("<p>Démonstration : seuls les médicaments dotés d'un prix, dans la limite de 3 000 lignes, sont chargés.</p>")}),
                    tableau(medic, "Médicaments et prix", [("libelle_court", "Médicament"), ("dci", "Substance"), ("prix_cfp", "Prix Nouméa (F)"),
@@ -81,7 +81,7 @@ class Command(BaseCommand):
                             ("prix_brousse", "Prix brousse (F CFP)"), ("prix_iles", "Prix îles (F CFP)"), ("date_application", "Applicable au")],
                            abonnement=True)]))
         actus = gouv.add_child(instance=PageContenu(
-            title="Actualités", slug="actualites", show_in_menus=True,
+            title="Actualités", slug="actualites", pictogramme="actualites", show_in_menus=True,
             chapo="Exemple de page éditoriale : l'éditeur ne propose que les mises en forme autorisées par le design system.",
             corps=[("intertitre", "Une mise en forme verrouillée"),
                    para("<p>Titres, paragraphes, listes et encadrés suivent automatiquement le design system. Le contributeur choisit parmi "
@@ -93,7 +93,7 @@ class Command(BaseCommand):
             title="Fonction publique de la Nouvelle-Calédonie", slug="drhfpnc", gabarit="accueil",
             chapo="Recrutement, concours et carrière dans la fonction publique de la Nouvelle-Calédonie."))
         concours = drh.add_child(instance=PageContenu(
-            title="Diplômes étrangers et concours", slug="diplomes-etrangers", gabarit="large", show_in_menus=True,
+            title="Diplômes étrangers et concours", slug="diplomes-etrangers", pictogramme="emploi", gabarit="large", show_in_menus=True,
             chapo="Les diplômes étrangers reconnus et les concours auxquels ils donnent accès.",
             corps=[("alerte", {"niveau": "attention", "message": RichText("<p>Exemple de bandeau non bloquant : un arrêté plus récent peut modifier cette liste.</p>")}),
                    tableau(diplomes, "Diplômes assimilés", [("diplome", "Diplôme"), ("pays", "Pays"), ("type", "Niveau"), ("arrete", "Arrêté")],

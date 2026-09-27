@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% load wagtailcore_tags %}
 {% block title %}{{ valeurs.0.1|default:"Fiche"|truncatechars:60 }}{% endblock %}
 {% block content %}
-<section class="bandeau-page">
+<section class="bandeau-page"><div class="bandeau-lignes" aria-hidden="true">{% include "carte_nc.svg" %}</div>
   <div class="cadre">
     <nav class="ariane" aria-label="Fil d'Ariane"><ol>{% for a in page.get_ancestors %}{% if a.depth > 1 %}<li><a href="{% pageurl a %}">{% if a.depth == 2 %}Accueil{% else %}{{ a.title }}{% endif %}</a></li>{% endif %}{% endfor %}<li><a href="{% pageurl page %}">{{ page.title }}</a></li><li aria-current="page">Fiche</li></ol></nav>
     <p class="surtitre">{{ conf.titre|default:ligne.source.nom }}</p>

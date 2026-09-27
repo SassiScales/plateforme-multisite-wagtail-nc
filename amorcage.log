@@ -1,0 +1,17 @@
+Tarif douanier : chapitres (SH2) : 100 lignes, 0 nouvelles
+Prix des médicaments en vigueur (Sempex) : 3000 lignes, 0 nouvelles
+Assimilation des diplômes étrangers (fonction publique) : 294 lignes, 0 nouvelles
+Updating backend: default
+default: Rebuilding index <modelsearch.backends.database.sqlite.sqlite.SQLiteIndex object at 0x106ac11f0>
+default: home.PageContenu          .
+default: home.HomePage             .
+default: tableaux.SourceDonnees    .
+default: tableaux.Ligne            ....
+default: wagtaildocs.Document      
+default: wagtailimages.Image       
+default: wagtailcore.Page          .
+default: indexed 3404 objects
+
+
+Démo prête. http://gouv.localhost:8000/  ·  http://drhfpnc.localhost:8000/  ·  admin : http://gouv.localhost:8000/admin/
+Comptes : admin, pole-com, editeur-drh  ·  mot de passe : demo-gnc-2026

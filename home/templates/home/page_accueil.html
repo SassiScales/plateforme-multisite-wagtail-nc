@@ -1,34 +1,55 @@
-{% extends "base.html" %}{% load wagtailcore_tags %}
+{% extends "base.html" %}{% load wagtailcore_tags plateforme_tags tableaux_tags %}
 {% block content %}
-<section class="heros">
-  <svg class="heros-deco" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <g class="nautile"><circle cx="1180" cy="170" r="130"/><circle cx="1180" cy="170" r="88"/><circle class="soleil" cx="1180" cy="170" r="46"/></g>
-    <path class="houle h1" d="M0 330 C240 290 460 360 720 320 C980 280 1200 350 1440 310 L1440 420 L0 420Z"/>
-    <path class="houle h2" d="M0 372 C300 340 520 392 780 362 C1040 332 1220 384 1440 360 L1440 420 L0 420Z"/>
-  </svg>
-  <div class="cadre heros-in">
-    <h1>Que cherchez-vous ?</h1>
-    <p class="heros-sous">{{ page.chapo|default:"Les informations et les données du gouvernement, au même endroit." }}</p>
-    <form class="heros-recherche" action="{% url 'search' %}" method="get" role="search">
-      <label class="sr-only" for="q-heros">Rechercher sur le site</label>
-      <input id="q-heros" name="query" type="search" placeholder="Un emploi, un tarif douanier, un médicament…" autocomplete="off">
+<section class="lagon" aria-labelledby="titre-accueil">
+  <div class="lagon-carte" aria-hidden="false">{% include "carte_nc.svg" %}</div>
+  <div class="cadre lagon-in">
+    <p class="lagon-surtitre">{% wagtail_site as s %}{{ s.site_name }} · Gouvernement de la Nouvelle-Calédonie</p>
+    <h1 id="titre-accueil" class="lagon-titre"><span>Du lagon aux îles,</span> <span>l'information publique</span> <span class="accent">en un seul endroit.</span></h1>
+    <form class="lagon-recherche" action="{% url 'search' %}" method="get" role="search">
+      <label class="sr-only" for="q-lagon">Rechercher sur le site</label>
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <input id="q-lagon" name="query" type="search" autocomplete="off" placeholder="Rechercher un emploi, un tarif, un médicament…"
+             data-exemples="{% exemples_recherche 5 %}">
       <button type="submit">Rechercher</button>
     </form>
     {% with enfants=page.get_children.live.in_menu %}{% if enfants %}
-    <p class="heros-sugg">Accès rapides : {% for e in enfants %}<a href="{% pageurl e %}">{{ e.title|lower }}</a>{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+    <ul class="lagon-raccourcis" aria-label="Accès rapides">{% for e in enfants %}<li><a href="{% pageurl e %}">{{ e.title }}</a></li>{% endfor %}</ul>
     {% endif %}{% endwith %}
   </div>
 </section>
+
+{% lignes_en_direct 18 as direct %}{% if direct %}
+<section class="direct" aria-labelledby="titre-direct">
+  <div class="cadre direct-tete"><h2 id="titre-direct"><span class="pastille-direct" aria-hidden="true"></span>En direct de data.gouv.nc</h2>
+    <button type="button" class="direct-pause" data-pause aria-pressed="false" aria-label="Mettre en pause le défilement" title="Mettre en pause le défilement"><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect class="ic-pause" x="3" y="2" width="3.4" height="12" rx="1"/><rect class="ic-pause" x="9.6" y="2" width="3.4" height="12" rx="1"/><path class="ic-lecture" d="M4 2.5v11l9.5-5.5z"/></svg></button></div>
+  <div class="direct-rail" data-rail>
+    <ul class="direct-liste">{% for d in direct %}<li><a href="{{ d.url }}"><span class="direct-rub">{{ d.rubrique }}</span>{{ d.texte|truncatechars:70 }}</a></li>{% endfor %}</ul>
+  </div>
+</section>
+{% endif %}
+
 <div class="cadre">
   {% for b in page.corps %}{% include_block b %}{% endfor %}
   {% with enfants=page.get_children.live.in_menu.specific %}{% if enfants %}
-  <h2 class="titre-section">Par besoin</h2>
+  <div class="section-tete"><p class="surtitre">Par besoin</p><h2 class="titre-section">Ce que vous venez chercher</h2></div>
   <ul class="tuiles">{% for e in enfants %}
-    <li class="apparait" style="--i:{{ forloop.counter0 }}"><a href="{% pageurl e %}">
-      {% with n=e.nb_donnees %}{% if n %}<span class="tuile-chiffre" data-compte="{{ n }}">{{ n }}</span><span class="tuile-unite">lignes de données à jour</span>{% else %}<span class="tuile-chiffre tuile-icone" aria-hidden="true">›</span>{% endif %}{% endwith %}
+    <li class="apparait tuile-{{ e.pictogramme|default:'neutre' }}" style="--i:{{ forloop.counter0 }}"><a href="{% pageurl e %}">
+      <span class="tuile-picto">{% if e.pictogramme %}{% include "pictos/"|add:e.pictogramme|add:".svg" %}{% endif %}</span>
       <strong>{{ e.title }}</strong>{% if e.chapo %}<span class="tuile-texte">{{ e.chapo|truncatechars:110 }}</span>{% endif %}
+      {% with n=e.nb_donnees %}{% if n %}<span class="tuile-pied"><span class="tuile-chiffre" data-compte="{{ n }}">{{ n|milliers }}</span> lignes à jour</span>{% else %}<span class="tuile-pied">Lire la rubrique</span>{% endif %}{% endwith %}
+      <span class="tuile-fleche" aria-hidden="true">→</span>
     </a></li>{% endfor %}
   </ul>
   {% endif %}{% endwith %}
+
+  {% sites_reseau as reseau %}
+  <section class="reseau apparait" aria-labelledby="titre-reseau">
+    <div class="section-tete"><p class="surtitre">Une plateforme, plusieurs sites</p><h2 id="titre-reseau" class="titre-section">Les sites du réseau</h2>
+      <p class="reseau-texte">Chaque direction garde son adresse et sa rubrique ; toutes partagent le même back-office, le même design system et la même recherche.</p></div>
+    <ul class="reseau-liste">
+      {% for s in reseau.actifs %}<li class="reseau-actif"><a href="{{ s.root_url }}/"><span class="reseau-etat">En ligne</span><strong>{{ s.site_name }}</strong><span>{{ s.root_page.title }}</span></a></li>{% endfor %}
+      {% for n in reseau.a_venir %}<li class="reseau-futur"><span class="reseau-etat">Extension</span><strong>{{ n }}</strong></li>{% endfor %}
+    </ul>
+  </section>
 </div>
 {% endblock %}
