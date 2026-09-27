@@ -1,0 +1,51 @@
+{% load wagtailroutablepage_tags tableaux_tags %}
+<section class="tableau" id="tableau-{{ source.pk }}" data-tableau aria-labelledby="titre-tab-{{ source.pk }}">
+  <div class="tableau-tete">
+    <h2 id="titre-tab-{{ source.pk }}">{{ value.titre|default:source.nom }}</h2>
+    <p class="tableau-meta"><span class="pastille-direct" aria-hidden="true"></span>Données à jour · lues le {{ source.derniere_lecture|date:"d/m/Y à H:i" }} sur data.gouv.nc{% if source.licence %} · {{ source.licence }}{% endif %}</p>
+  </div>
+  {% if value.recherche %}
+  <form method="get" class="tableau-recherche" role="search" data-recherche-live>
+    <label for="q-{{ source.pk }}">Filtrer les {{ source.nb_lignes|milliers }} lignes</label>
+    <div class="champ-recherche">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <input id="q-{{ source.pk }}" name="q" value="{{ q }}" type="search" autocomplete="off" aria-describedby="compte-{{ source.pk }}">
+      <button type="submit">Filtrer</button>
+    </div>
+  </form>
+  {% endif %}
+  <p class="tableau-compte" id="compte-{{ source.pk }}" role="status" aria-live="polite">{% if q %}{{ page_lignes.paginator.count }} résultat{{ page_lignes.paginator.count|pluralize }} pour « {{ q }} »{% else %}{{ page_lignes.paginator.count|milliers }} lignes{% endif %}</p>
+  <div class="tableau-defil" data-zone>
+  <table>
+    <caption class="sr-only">{{ value.titre|default:source.nom }}, page {{ page_lignes.number }} sur {{ page_lignes.paginator.num_pages }}</caption>
+    <thead><tr>{% for ch, lib in colonnes %}<th scope="col">{{ lib }}</th>{% endfor %}<th scope="col"><span class="sr-only">Fiche</span></th></tr></thead>
+    <tbody>
+    {% for ligne, valeurs in rangees %}
+      <tr class="rangee" style="--i:{{ forloop.counter0 }}">{% for v in valeurs %}<td{% if forloop.first %} class="col-cle"{% endif %}>{{ v|default_if_none:"" }}</td>{% endfor %}
+        <td class="col-fiche">{% if page %}<a href="{% routablepageurl page 'ligne' source.pk ligne.identifiant %}" aria-label="Voir la fiche : {{ valeurs.0 }}">Fiche <span aria-hidden="true">→</span></a>{% endif %}</td></tr>
+    {% empty %}
+      <tr><td class="vide" colspan="{{ colonnes|length|add:1 }}">Aucune ligne ne correspond{% if q %} à « {{ q }} »{% endif %}. Essayez un autre mot.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if page_lignes.has_other_pages %}
+  <nav class="pagination" aria-label="Pages du tableau">
+    {% if page_lignes.has_previous %}<a href="?p={{ page_lignes.previous_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}#tableau-{{ source.pk }}">← Précédent</a>{% else %}<span></span>{% endif %}
+    <span>Page {{ page_lignes.number }} sur {{ page_lignes.paginator.num_pages }}</span>
+    {% if page_lignes.has_next %}<a href="?p={{ page_lignes.next_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}#tableau-{{ source.pk }}">Suivant →</a>{% else %}<span></span>{% endif %}
+  </nav>
+  {% endif %}
+  {% if value.abonnement %}
+  <form method="post" action="{% url 'tableaux_abonner' source.pk %}" class="tableau-alerte">
+    {% csrf_token %}
+    <div class="alerte-texte"><strong>Être alerté des nouveautés</strong><span>Un seul e-mail à chaque mise à jour, seulement si une nouvelle ligne vous concerne. Désinscription en un clic.</span></div>
+    <input type="hidden" name="retour" value="{{ request.path }}">
+    <div class="alerte-champs">
+      <label for="em-{{ source.pk }}">Adresse e-mail</label><input id="em-{{ source.pk }}" name="email" type="email" required autocomplete="email">
+      <label for="fi-{{ source.pk }}">Mot à suivre (facultatif)</label><input id="fi-{{ source.pk }}" name="filtre" placeholder="ex. Australie">
+      <button type="submit" class="bouton-soleil">M'alerter</button>
+    </div>
+  </form>
+  {% endif %}
+</section>

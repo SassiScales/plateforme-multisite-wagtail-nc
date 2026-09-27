@@ -1,0 +1,5 @@
+{% with s=self.instance %}{% if s and s.pk %}
+<p><strong>{{ s.nb_lignes }}</strong> lignes en cache ; dernière lecture : {{ s.derniere_lecture|date:"d/m/Y H:i"|default:"jamais" }}.</p>
+{% if s.derniere_erreur %}<p style="color:#b3261e"><strong>Dernière erreur :</strong> {{ s.derniere_erreur }} (le site affiche la dernière version valide)</p>{% endif %}
+<p><strong>Champs disponibles :</strong> {% for c in s.champs %}<code>{{ c }}</code>{% if not forloop.last %}, {% endif %}{% empty %}lecture nécessaire{% endfor %}</p>
+{% else %}<p>Enregistrez la source, puis lancez la lecture pour voir ses champs.</p>{% endif %}{% endwith %}

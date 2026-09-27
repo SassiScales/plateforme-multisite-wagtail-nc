@@ -1,0 +1,50 @@
+{% load static wagtailcore_tags wagtailuserbar %}{% wagtail_site as site_courant %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}{% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}{% endblock %} · {{ site_courant.site_name|default:"gouv.nc" }}</title>
+  {% if page.search_description or page.chapo %}<meta name="description" content="{{ page.search_description|default:page.chapo|truncatechars:160 }}">{% endif %}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if page.full_url %}<link rel="canonical" href="{{ page.full_url }}">{% endif %}
+  {% if page.json_ld %}<script type="application/ld+json">{{ page.json_ld|safe }}</script>{% endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/plateforme.css' %}">
+  <script src="{% static 'js/plateforme.js' %}" defer></script>
+</head>
+<body>
+  <a class="evitement" href="#contenu">Aller au contenu</a>
+  <header class="entete" role="banner">
+    <div class="cadre entete-in">
+      <a class="marque" href="/" aria-label="{{ site_courant.site_name }}, accueil">
+        {% include "embleme.svg" %}
+        <span><strong>{{ site_courant.site_name|default:"gouv.nc" }}</strong><small>Gouvernement de la Nouvelle-Calédonie</small></span>
+      </a>
+      <nav class="nav" aria-label="Menu principal">
+        <ul>{% for r in site_courant.root_page.get_children.live.in_menu %}
+          <li><a href="{% pageurl r %}"{% if page.rubrique_pk == r.pk %} aria-current="page"{% endif %}>{{ r.title }}</a></li>{% endfor %}
+          <li><a class="nav-recherche" href="{% url 'search' %}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Rechercher</span></a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="lisere" aria-hidden="true"><span></span><span></span><span></span></div>
+  </header>
+  <p class="bandeau-demo">Démonstration Repflow · consultation 2026-DINUM-52051 · habillage provisoire en attendant le design system du GNC · données de data.gouv.nc lues en direct</p>
+  <main id="contenu" tabindex="-1">
+    {% if messages %}<div class="cadre"><div class="messages" role="status">{% for m in messages %}<p>{{ m }}</p>{% endfor %}</div></div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="pied">
+    <div class="cadre pied-in">
+      <div class="pied-marque">{% include "embleme.svg" %}<p><strong>{{ site_courant.site_name|default:"gouv.nc" }}</strong><br>Un site de la plateforme unique du gouvernement de la Nouvelle-Calédonie.</p></div>
+      <ul class="pied-liens">
+        <li><a href="https://service-public.nc">service-public.nc : vos démarches</a></li>
+        <li><a href="https://data.gouv.nc">data.gouv.nc : données ouvertes</a></li>
+        <li><a href="{% url 'search' %}">Rechercher</a></li>
+      </ul>
+    </div>
+    <div class="cadre pied-bas"><p>Accessibilité : démonstration conçue pour le RGAA niveau AA · Données : licence ouverte · Démonstration technique Repflow, septembre 2026</p></div>
+  </footer>
+  {% wagtailuserbar %}
+</body>
+</html>

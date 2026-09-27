@@ -1,0 +1,10 @@
+{% load wagtailcore_tags %}
+<section class="bandeau-page">
+  <div class="cadre">
+    <nav class="ariane" aria-label="Fil d'Ariane"><ol>{% for a in page.get_ancestors %}{% if a.depth > 1 %}<li><a href="{% pageurl a %}">{% if a.depth == 2 %}Accueil{% else %}{{ a.title }}{% endif %}</a></li>{% endif %}{% endfor %}<li aria-current="page">{{ page.title }}</li></ol></nav>
+    <h1>{{ page.title }}</h1>
+    {% if page.chapo %}<p class="chapo">{{ page.chapo }}</p>{% endif %}
+    {% if page.last_published_at %}<p class="date">Mis à jour le {{ page.last_published_at|date:"d/m/Y" }}</p>{% endif %}
+  </div>
+  <svg class="vague" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 24 C240 4 480 40 720 22 C960 4 1200 36 1440 18 L1440 40 L0 40Z"/></svg>
+</section>

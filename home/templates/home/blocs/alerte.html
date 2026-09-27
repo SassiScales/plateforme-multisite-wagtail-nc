@@ -1,0 +1,1 @@
+{% load wagtailcore_tags %}<div class="alerte alerte-{{ value.niveau }}" role="note"><strong>{% if value.niveau == "attention" %}Attention{% else %}Information{% endif %} :</strong> {{ value.message|richtext }}</div>

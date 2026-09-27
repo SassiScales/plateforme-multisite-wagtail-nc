@@ -1,0 +1,8 @@
+{% extends "wagtailadmin/login.html" %}
+{% block branding_login %}Plateforme GNC · espace contributeurs{% endblock %}
+{% block above_login %}
+<a class="login-agentconnect" href="#" aria-describedby="ac-note">Se connecter avec Agent Connect
+  <small id="ac-note">Démonstration : en production, connexion unique par le Keycloak de la DINUM (UC002)</small></a>
+<p class="login-separateur">ou, pour la démonstration, avec un compte local</p>
+{% endblock %}
+{% block branding_logo %}<div style="display:flex;justify-content:center;gap:.6rem;align-items:center;margin-top:1.5rem">{% include "embleme.svg" %}<strong style="font-size:1.1rem">gouv.nc · drhfpnc</strong></div>{% endblock %}

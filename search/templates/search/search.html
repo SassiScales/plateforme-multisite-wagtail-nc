@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load wagtailcore_tags wagtailroutablepage_tags %}
+{% block title %}{% if search_query %}« {{ search_query }} » : résultats{% else %}Rechercher{% endif %}{% endblock %}
+{% block content %}
+<section class="bandeau-page">
+  <div class="cadre">
+    <h1>Rechercher</h1>
+    <form class="heros-recherche heros-recherche-page" action="{% url 'search' %}" method="get" role="search">
+      <label class="sr-only" for="q-page">Rechercher sur le site</label>
+      <input id="q-page" name="query" type="search" value="{{ search_query }}" placeholder="Un emploi, un tarif douanier, un médicament…">
+      <button type="submit">Rechercher</button>
+    </form>
+  </div>
+  <svg class="vague" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 24 C240 4 480 40 720 22 C960 4 1200 36 1440 18 L1440 40 L0 40Z"/></svg>
+</section>
+<div class="cadre resultats">
+{% if search_query %}
+  <p class="tableau-compte" role="status">{{ search_results.paginator.count }} page{{ search_results.paginator.count|pluralize }} et {{ nb_lignes }} ligne{{ nb_lignes|pluralize }} de données pour « {{ search_query }} »</p>
+  {% if search_results %}<h2 class="titre-section">Pages</h2><ul class="liste-resultats">{% for r in search_results %}<li class="apparait" style="--i:{{ forloop.counter0 }}"><a href="{% pageurl r %}"><strong>{{ r.title }}</strong>{% if r.specific.chapo %}<span>{{ r.specific.chapo }}</span>{% endif %}</a></li>{% endfor %}</ul>{% endif %}
+  {% if lignes %}<h2 class="titre-section">Dans les tableaux de données</h2><ul class="liste-resultats">{% for x in lignes %}<li class="apparait" style="--i:{{ forloop.counter0 }}"><a href="{% routablepageurl x.page 'ligne' x.ligne.source_id x.ligne.identifiant %}"><strong>{{ x.resume|truncatechars:110 }}</strong><span>{{ x.ligne.source.nom }} · {{ x.page.title }}</span></a></li>{% endfor %}</ul>{% endif %}
+  {% if not search_results and not lignes %}<p>Aucun résultat. Vérifiez l'orthographe ou essayez un mot plus général.</p>{% endif %}
+{% else %}<p>Saisissez un mot : un métier, un pays, un chapitre douanier, un médicament.</p>{% endif %}
+</div>
+{% endblock %}
