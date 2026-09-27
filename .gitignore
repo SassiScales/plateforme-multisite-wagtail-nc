@@ -12,3 +12,8 @@ design/sources/*.geojson
 video/brut/
 video/*.mp4
 video/voix/
+video/film/images/
+video/film/apercu/
+video/film/*.wav
+video/film/*.mp4
+video/film/rendu.log

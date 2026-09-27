@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"Advent Pro";font-weight:600;src:url("../../plateforme/static/fonts/advent-pro-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Advent Pro";font-weight:700;src:url("../../plateforme/static/fonts/advent-pro-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Public Sans";font-weight:400;src:url("../../plateforme/static/fonts/public-sans-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Public Sans";font-weight:600;src:url("../../plateforme/static/fonts/public-sans-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Public Sans";font-weight:700;src:url("../../plateforme/static/fonts/public-sans-latin-700-normal.woff2") format("woff2")}
+  html,body{margin:0;background:#00172a;overflow:hidden}
+  canvas{display:block}
+  #titre{position:fixed;left:64px;top:52px;color:#fbf7f0;font:700 30px/1.1 "Advent Pro","Public Sans",system-ui;letter-spacing:.01em}
+  #titre small{display:block;font:600 16px "Public Sans",system-ui;color:#8fd0e6;margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+  #legende{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);text-align:center;color:#fbf7f0;font:700 64px/1 "Advent Pro","Public Sans",system-ui;white-space:nowrap}
+  #legende span{display:block;font:600 22px "Public Sans",system-ui;color:#8fd0e6;margin-top:10px;letter-spacing:.02em}
+  #fin{position:fixed;inset:0;display:grid;place-items:center;text-align:center;color:#fbf7f0;opacity:0}
+  #fin h1{font:700 86px/1 "Advent Pro",system-ui;margin:0}
+  #fin p{font:600 26px "Public Sans",system-ui;color:#fd9827;margin:18px 0 0}
+</style></head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<div id="titre">45 sites. Une plateforme.<small>Données publiques de Nouvelle-Calédonie · data.gouv.nc</small></div>
+<div id="legende"></div>
+<div id="fin"><div><h1>Sassi Scales LLC</h1><p>github.com/SassiScales/plateforme-multisite-wagtail-nc</p></div></div>
+<svg id="mesure" width="0" height="0" style="position:absolute"></svg>
+<script>
+const D = window.__DONNEES, IMG = new Image(); IMG.src = window.__CAPTURE;
+const cv = document.getElementById('c'), g = cv.getContext('2d');
+const W = 1920, H = 1080, N = 2400;
+const LEG = document.getElementById('legende'), FIN = document.getElementById('fin'), TITRE = document.getElementById('titre');
+
+// ---- utilitaires
+let graine = 42; const alea = () => (graine = (graine * 16807) % 2147483647) / 2147483647;
+const mix = (a, b, t) => a + (b - a) * t, clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+
+// ---- repère carte -> écran
+const [VW, VH] = D.viewbox, S = Math.min(1500 / VW, 900 / VH), OX = (W - VW * S) / 2 + 120, OY = (H - VH * S) / 2 + 30;
+const ecran = (x, y) => [OX + x * S, OY + y * S];
+
+// ---- échantillonnage de chemins SVG
+const svgns = 'http://www.w3.org/2000/svg', mes = document.getElementById('mesure');
+function echantillonner(ds, n) {
+  const els = ds.map(d => { const p = document.createElementNS(svgns, 'path'); p.setAttribute('d', d); mes.appendChild(p); return p; });
+  const L = els.map(e => e.getTotalLength()), tot = L.reduce((a, b) => a + b, 0), out = [];
+  for (let i = 0; i < n; i++) {
+    let s = (i + .5) / n * tot, k = 0;
+    while (k < L.length - 1 && s > L[k]) { s -= L[k]; k++; }
+    const p = els[k].getPointAtLength(Math.min(s, L[k]));
+    out.push(ecran(p.x, p.y));
+  }
+  els.forEach(e => e.remove());
+  return out;
+}
+const melanger = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(alea() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+// ---- formations (chacune : N positions + couleur)
+const F = {};
+// 0. spirale du nautile
+F.spirale = Array.from({ length: N }, (_, i) => {
+  const t = i / N, a = t * Math.PI * 8, r = 14 * Math.exp(0.1947 * a);
+  return [W / 2 + 60 + Math.cos(a) * r * .5, H / 2 + 10 + Math.sin(a) * r * .5];
+});
+// 1. lignes du lagon
+F.lagon = echantillonner(D.courbes.filter(Boolean), N);
+// 2. côtes et limites communales
+F.cotes = echantillonner(Object.values(D.communes).map(c => c.d), N);
+// 3. établissements de santé (1 239, doublés pour occuper les 2 400 particules)
+F.sante = Array.from({ length: N }, (_, i) => { const p = D.sante[i % D.sante.length]; const [x, y] = ecran(p[0], p[1]); return [x + (i >= D.sante.length ? (alea() - .5) * 3 : 0), y + (i >= D.sante.length ? (alea() - .5) * 3 : 0)]; });
+// 4. trois barres de prix : Nouméa 100, brousse +5 %, îles +7 %
+F.prix = Array.from({ length: N }, (_, i) => {
+  const b = i % 3, k = Math.floor(i / 3), hauteurs = [1, 1.05, 1.07], cols = 8;
+  const rang = Math.floor(k / cols), col = k % cols, hmax = 560 * hauteurs[b], lignes = Math.ceil(N / 3 / cols);
+  return [W / 2 - 330 + b * 330 + (col - cols / 2) * 13, H / 2 + 200 - rang / lignes * hmax];
+});
+// 5. pages : 9 feuillets en éventail (contour + lignes de texte), 799 pages du code
+F.pages = (() => {
+  const out = [], FEU = 9, PW = 300, PH = 410, cx = W / 2 + 60, cy = H / 2 + 250;
+  const parFeuille = Math.floor(N / FEU);
+  for (let f = 0; f < FEU; f++) {
+    const ang = (f / (FEU - 1) - .5) * .9, ca = Math.cos(ang), sa = Math.sin(ang);
+    for (let j = 0; j < parFeuille; j++) {
+      let x, y; const u = j / parFeuille;
+      if (u < .55) {                               // contour de la feuille
+        const t = u / .55 * 2 * (PW + PH);
+        if (t < PW) { x = t; y = 0; } else if (t < PW + PH) { x = PW; y = t - PW; }
+        else if (t < 2 * PW + PH) { x = PW - (t - PW - PH); y = PH; } else { x = 0; y = PH - (t - 2 * PW - PH); }
+      } else {                                     // lignes de texte
+        const v = (u - .55) / .45, ligne = Math.floor(v * 14), pos = (v * 14) % 1;
+        x = 30 + pos * (ligne % 4 === 3 ? 150 : 240); y = 40 + ligne * 25;
+      }
+      const lx = x - PW / 2, ly = y - PH;          // pivot en bas au centre
+      out.push([cx + lx * ca - ly * sa, cy + lx * sa + ly * ca]);
+    }
+  }
+  while (out.length < N) out.push(out[out.length % 100]);
+  return out;
+})();
+// 6. grille de 2 400 articles (60 × 40)
+F.articles = Array.from({ length: N }, (_, i) => [W / 2 + 120 + (i % 60 - 29.5) * 19, H / 2 + 20 + (Math.floor(i / 60) - 19.5) * 19]);
+// 7. communes : particules réparties selon le nombre d'artisans, à l'intérieur de chaque commune
+const comm = Object.values(D.communes), totalArt = comm.reduce((a, c) => a + c.n, 0);
+const parCommune = comm.map(c => Math.max(1, Math.round(c.n / totalArt * N)));
+F.communes = (() => {
+  const out = [], canvasTest = document.createElement('canvas').getContext('2d');
+  comm.forEach((c, k) => {
+    const p = new Path2D(c.d); let essais = 0, pris = 0;
+    const bb = (() => { const nums = c.d.match(/-?\d+\.?\d*/g).map(Number); const xs = nums.filter((_, j) => j % 2 === 0), ys = nums.filter((_, j) => j % 2 === 1); return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; })();
+    while (pris < parCommune[k] && essais < 20000) {
+      essais++;
+      const x = mix(bb[0], bb[2], alea()), y = mix(bb[1], bb[3], alea());
+      if (canvasTest.isPointInPath(p, x, y)) { out.push(ecran(x, y)); pris++; }
+    }
+  });
+  while (out.length < N) out.push(out[out.length % Math.max(out.length, 1)]);
+  return out.slice(0, N);
+})();
+// 8. 45 sites en couronne
+F.sites = Array.from({ length: N }, (_, i) => {
+  const s = i % 45, a = s / 45 * Math.PI * 2 - Math.PI / 2, R = 290, r = Math.sqrt(alea()) * 22, b = alea() * Math.PI * 2;
+  return [W / 2 + Math.cos(a) * R + Math.cos(b) * r, H / 2 - 40 + Math.sin(a) * R + Math.sin(b) * r];
+});
+// 9. un seul point
+F.point = Array.from({ length: N }, () => { const r = Math.sqrt(alea()) * 16, b = alea() * Math.PI * 2; return [W / 2 + Math.cos(b) * r, H / 2 - 40 + Math.sin(b) * r]; });
+// 10. fenêtre de navigateur (contour)
+const FX = 360, FY = 170, FW = 1200, FH = 750;
+F.fenetre = Array.from({ length: N }, (_, i) => {
+  const t = i / N * 2 * (FW + FH);
+  if (t < FW) return [FX + t, FY]; if (t < FW + FH) return [FX + FW, FY + t - FW];
+  if (t < 2 * FW + FH) return [FX + FW - (t - FW - FH), FY + FH]; return [FX, FY + FH - (t - 2 * FW - FH)];
+});
+
+// ---- partition : [formation, début de l'arrivée, durée d'arrivée, couleur, légende]
+const BLEU = '#3cbcdd', SOLEIL = '#fd9827', CREME = '#fbf7f0', VERT = '#5fd08f';
+const SEQ = [
+  ['spirale', 0.0, 2.4, SOLEIL, null],
+  ['lagon', 4.8, 1.8, BLEU, null],
+  ['cotes', 9.6, 1.8, CREME, ['33 communes', 'limites publiées sur data.gouv.nc']],
+  ['sante', 14.4, 1.8, SOLEIL, ['1 239', 'établissements de santé, à leur vraie place']],
+  ['prix', 19.2, 1.8, BLEU, ['+5 %  ·  +7 %', 'un médicament coûte plus cher en brousse et aux îles qu’à Nouméa']],
+  ['pages', 24.0, 1.8, CREME, ['799 pages', 'le code du travail, en PDF']],
+  ['articles', 28.8, 1.8, VERT, ['2 400 articles', 'découpés automatiquement, cherchables un par un']],
+  ['communes', 33.6, 1.8, SOLEIL, ['11 174 artisans', 'répartis dans les 33 communes']],
+  ['sites', 38.4, 1.8, BLEU, ['45 sites', 'aujourd’hui dispersés']],
+  ['point', 43.2, 1.6, SOLEIL, ['1 plateforme', 'un back-office, un design system']],
+  ['fenetre', 45.6, 1.6, CREME, null],
+  ['spirale', 52.8, 2.4, SOLEIL, null],
+];
+const DUREE = 60.5;
+const BARRES = ['#3cbcdd', '#fd9827', '#5fd08f'].map(hex);
+const retard = Float32Array.from({ length: N }, () => alea() * .55);
+
+function formationA(t) {   // [indice courant, avancement de l'arrivée]
+  let k = 0; for (let i = 0; i < SEQ.length; i++) if (t >= SEQ[i][1]) k = i;
+  return k;
+}
+
+let derniere = -1;
+function fond(t) {
+  const suite = derniere >= 0 && Math.abs(t - derniere - 1 / 30) < 1e-3;
+  derniere = t;
+  g.save(); g.globalAlpha = suite ? .34 : 1;
+  const gr = g.createRadialGradient(W * .62, H * .38, 80, W * .5, H * .5, 1300);
+  gr.addColorStop(0, '#0b5f86'); gr.addColorStop(.45, '#00385a'); gr.addColorStop(1, '#00121f');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H); g.restore();
+}
+
+function couches(t) {
+  // carte remplie (côtes, santé, communes)
+  const a = clamp((t - 10.4) / 1.4) * (1 - clamp((t - 18.8) / 1.2)) + clamp((t - 34.0) / 1.2) * (1 - clamp((t - 38.2) / 1.0));
+  if (a > 0) {
+    g.save(); g.globalAlpha = a * .95;
+    const ch = t > 28;
+    const maxN = Math.max(...comm.map(c => c.n));
+    comm.forEach(c => {
+      const p = new Path2D(c.d); g.save(); g.translate(OX, OY); g.scale(S, S);
+      if (ch) { const v = Math.pow(c.n / maxN, .35); const r = mix(20, 0, v), gg = mix(70, 150, v), b = mix(95, 200, v); g.fillStyle = `rgb(${r},${gg},${b})`; }
+      else g.fillStyle = 'rgba(251,247,240,.13)';
+      g.fill(p); g.lineWidth = 1 / S; g.strokeStyle = 'rgba(143,208,230,.35)'; g.stroke(p); g.restore();
+    });
+    g.restore();
+  }
+  // capture de la page d'accueil dans la fenêtre
+  const b = clamp((t - 46.6) / 1.2) * (1 - clamp((t - 52.4) / .8));
+  if (b > 0 && IMG.complete) {
+    g.save(); g.globalAlpha = b;
+    g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 60;
+    const z = 1 + (t - 46.6) * .012;
+    g.translate(W / 2, FY + FH / 2); g.scale(z, z); g.translate(-W / 2, -(FY + FH / 2));
+    g.fillStyle = '#fff'; g.fillRect(FX, FY, FW, FH);
+    g.drawImage(IMG, FX, FY + 34, FW, FH - 34);
+    g.fillStyle = '#e8edf1'; g.fillRect(FX, FY, FW, 34);
+    ['#ff5f57', '#febc2e', '#28c840'].forEach((c, i) => { g.fillStyle = c; g.beginPath(); g.arc(FX + 22 + i * 20, FY + 17, 6, 0, 7); g.fill(); });
+    g.fillStyle = '#5b6770'; g.font = '15px system-ui'; g.fillText('gouv.nc', FX + 110, FY + 22);
+    g.restore();
+  }
+}
+
+function particules(t) {
+  const k = formationA(t), [nom, t0, dur, coul] = SEQ[k];
+  const prec = k > 0 ? SEQ[k - 1] : SEQ[0];
+  const A = F[prec[0]], B = F[nom], ca = hex(prec[3]), cb = hex(coul);
+  g.save(); g.globalCompositeOperation = 'lighter';
+  const respire = 1 + Math.sin(t * 2.6) * .15;
+  for (let i = 0; i < N; i++) {
+    let u = k === 0 ? clamp((t - i / N * 2.2) / .4) : clamp((t - t0 - retard[i]) / dur);
+    u = eio(u);
+    const x = mix(A[i][0], B[i][0], u), y = mix(A[i][1], B[i][1], u);
+    const arc = Math.sin(u * Math.PI) * 60 * (retard[i] - .27);   // léger vol en courbe
+    const cfin = nom === 'prix' ? BARRES[i % 3] : cb, cdeb = prec[0] === 'prix' ? BARRES[i % 3] : ca;
+    const r = mix(cdeb[0], cfin[0], u) | 0, gg = mix(cdeb[1], cfin[1], u) | 0, b = mix(cdeb[2], cfin[2], u) | 0;
+    let alpha = k === 0 ? u : (nom === 'sante' && i >= D.sante.length ? .25 : .85);
+    alpha *= 1 - .9 * clamp((t - 56.8) / 1.2);
+    const taille = (nom === 'point' ? 2.6 : nom === 'articles' ? 3.4 : 2.3) * respire;
+    g.fillStyle = `rgba(${r},${gg},${b},${alpha})`;
+    g.beginPath(); g.arc(x + arc, y - arc * .6, taille, 0, 6.283); g.fill();
+    g.fillStyle = `rgba(${r},${gg},${b},${alpha * .12})`;
+    g.beginPath(); g.arc(x + arc, y - arc * .6, taille * 3.2, 0, 6.283); g.fill();
+  }
+  g.restore();
+}
+
+function libellesPrix(t) {
+  const a = clamp((t - 20.6) / .5) * (1 - clamp((t - 23.6) / .4));
+  if (a <= 0) return;
+  g.save(); g.globalAlpha = a; g.textAlign = 'center'; g.font = '600 26px "Public Sans"';
+  [['Nouméa', 'référence'], ['Brousse', '+5 %'], ['Îles', '+7 %']].forEach(([n, v], b) => {
+    const x = W / 2 - 330 + b * 330;
+    g.fillStyle = '#fbf7f0'; g.fillText(n, x, H / 2 + 245);
+    g.fillStyle = ['#3cbcdd', '#fd9827', '#5fd08f'][b]; g.font = '700 30px "Advent Pro"'; g.fillText(v, x, H / 2 + 280); g.font = '600 26px "Public Sans"';
+  });
+  g.restore();
+}
+
+function grain(t) {
+  // grain papier léger, déterministe par image
+  const f = Math.floor(t * 30); let s = f * 9301 + 49297;
+  g.save(); g.globalAlpha = .045;
+  for (let i = 0; i < 1400; i++) { s = (s * 9301 + 49297) % 233280; const x = s / 233280 * W; s = (s * 9301 + 49297) % 233280; const y = s / 233280 * H; g.fillStyle = i % 2 ? '#fff' : '#000'; g.fillRect(x, y, 2, 2); }
+  g.restore();
+}
+
+function textes(t) {
+  const k = formationA(t), leg = SEQ[k][4], t0 = SEQ[k][1];
+  const fin = k + 1 < SEQ.length ? SEQ[k + 1][1] : DUREE;
+  const a = leg ? clamp((t - t0 - .9) / .5) * (1 - clamp((t - fin + .45) / .4)) : 0;
+  LEG.innerHTML = leg ? `${leg[0]}<span>${leg[1]}</span>` : '';
+  LEG.style.opacity = a; LEG.style.transform = `translateX(-50%) translateY(${(1 - a) * 18}px)`;
+  const f = clamp((t - 57.2) / 1.0);
+  FIN.style.opacity = f; TITRE.style.opacity = 1 - f;
+}
+
+window.render = t => { fond(t); couches(t); particules(t); libellesPrix(t); grain(t); textes(t); };
+window.pret = () => IMG.complete;
+window.DUREE = DUREE;
+</script>
+</body></html>
