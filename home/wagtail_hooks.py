@@ -36,7 +36,7 @@ class AccueilEvaluateur(Component):
             '<h2 class="w-h3" style="margin:0 0 .4rem">Compte d\'évaluation</h2>'
             '<p style="margin:0 0 .5rem">Vous avez les droits d\'un contributeur du pôle communication : modifier une page, '
             'soumettre à validation, publier, ajouter une image, configurer une source de données.</p>'
-            '<p style="margin:0">Essayez sans crainte : la base est remise à neuf chaque nuit à 3 h (heure de Nouméa).</p></section>')
+            '<p style="margin:0">Essayez sans crainte : la base est remise à neuf chaque jour, à la première visite après 3 h (heure de Nouméa).</p></section>')
 
 
 @hooks.register("construct_homepage_panels")

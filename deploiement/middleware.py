@@ -62,3 +62,50 @@ class VisiteurLectureSeule:
             messages.warning(request, "Compte de démonstration en lecture seule : rien n'a été enregistré.")
             return HttpResponseRedirect(request.META.get("HTTP_REFERER") or "/admin/")
         return self.get_response(request)
+
+
+class RemiseQuotidienne:
+    """Remise à neuf quotidienne sans tâche planifiée (réservée aux comptes payants de l'hébergeur).
+
+    À la première requête après 3 h (heure de Nouméa), le script REMISE_SCRIPT restaure la base de référence ;
+    un verrou empêche deux remises simultanées ; sans marque de dernière remise, on pose celle du jour sans remettre.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        import os
+        import subprocess
+        import time
+        from datetime import datetime, timedelta
+        from pathlib import Path
+        from zoneinfo import ZoneInfo
+
+        from django.conf import settings
+        from django.db import connections
+
+        script = getattr(settings, "REMISE_SCRIPT", "")
+        if script:
+            marque, verrou = Path.home() / ".derniere_remise", Path.home() / ".remise.verrou"
+            maintenant = datetime.now(ZoneInfo("Pacific/Noumea"))
+            jour = (maintenant.date() if maintenant.hour >= 3 else maintenant.date() - timedelta(days=1)).isoformat()
+            derniere = marque.read_text().strip() if marque.exists() else ""
+            if not derniere:
+                marque.write_text(jour)
+            elif derniere < jour:
+                if verrou.exists() and time.time() - verrou.stat().st_mtime > 600:
+                    verrou.unlink(missing_ok=True)
+                try:
+                    fd = os.open(verrou, os.O_CREAT | os.O_EXCL)
+                except FileExistsError:
+                    fd = None
+                if fd is not None:
+                    try:
+                        connections.close_all()
+                        subprocess.run(["bash", script], check=True, timeout=180, capture_output=True)
+                        marque.write_text(jour)
+                    finally:
+                        os.close(fd)
+                        verrou.unlink(missing_ok=True)
+        return self.get_response(request)

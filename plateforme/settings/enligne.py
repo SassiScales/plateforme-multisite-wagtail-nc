@@ -14,7 +14,8 @@ SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 INSTALLED_APPS = [*INSTALLED_APPS, "deploiement"]
-MIDDLEWARE = ["deploiement.middleware.HoteUnique", *MIDDLEWARE]
+MIDDLEWARE = ["deploiement.middleware.RemiseQuotidienne", "deploiement.middleware.HoteUnique", *MIDDLEWARE]
+REMISE_SCRIPT = os.environ.get("REMISE_SCRIPT", os.path.expanduser("~/remise_a_zero.sh"))
 MIDDLEWARE.insert(MIDDLEWARE.index("django.contrib.messages.middleware.MessageMiddleware") + 1,
                   "deploiement.middleware.VisiteurLectureSeule")
 STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
