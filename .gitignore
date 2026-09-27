@@ -3,8 +3,8 @@ __pycache__/
 *.pyc
 db.sqlite3
 runserver.log
-media/
-static/
+/media/
+/static/
 .DS_Store
 migration/lots/
 migration/rapports/
