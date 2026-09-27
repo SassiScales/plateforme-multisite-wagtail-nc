@@ -1,7 +1,10 @@
 """Blocs StreamField « Tableau de données » et « Carte par commune » : configuration sans code, page par page."""
+import hashlib
+import json
 import re
 from urllib.parse import urlencode
 
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import FloatField, Q
 from django.db.models.fields.json import KT
@@ -112,9 +115,22 @@ class TableauBlock(blocks.StructBlock):
                 expr = Cast(expr, FloatField())
             lignes = lignes.order_by(expr.desc(nulls_last=True) if ordre == "desc" else expr.asc(nulls_last=True))
 
-        donnees_filtrees = [l.donnees for l in lignes] if (value.get("indicateurs") or value.get("filtre_champ")) else []
-        toutes = [l.donnees for l in source.lignes.all()] if value.get("filtre_champ") else []
-        reperes = [r for r in (calculs.indicateur(i, donnees_filtrees) for i in value.get("indicateurs") or []) if r]
+        # Repères et filtres : calculés une fois par version de la source (jusqu'à sa prochaine lecture)
+        # et par recherche ; sans ce cache, une source de 43 000 lignes était relue à chaque visite.
+        conf = json.dumps([value.get("indicateurs") and [dict(i) for i in value["indicateurs"]], value.get("filtre_champ")],
+                          default=str, sort_keys=True)
+        cle = "tab:" + hashlib.sha1(f"{source.pk}|{source.derniere_lecture}|{q}|{f}|{conf}".encode()).hexdigest()
+        calcul = cache.get(cle)
+        if calcul is None:
+            donnees_filtrees = list(lignes.values_list("donnees", flat=True)) if (value.get("indicateurs") or value.get("filtre_champ")) else []
+            reperes = [r for r in (calculs.indicateur(i, donnees_filtrees) for i in value.get("indicateurs") or []) if r]
+            facettes = []
+            if value.get("filtre_champ"):
+                toutes = list(source.lignes.values_list("donnees", flat=True))
+                facettes = calculs.facettes(toutes, value.get("filtre_champ"))
+            calcul = {"reperes": reperes, "facettes": facettes}
+            cache.set(cle, calcul, 24 * 3600)
+        reperes = calcul["reperes"]
         page = Paginator(lignes, value["par_page"]).get_page(request.GET.get("p") if request else 1)
         carte = None
         if value.get("affichage") == "carte":
@@ -122,7 +138,7 @@ class TableauBlock(blocks.StructBlock):
         ctx.update({
             "source": source, "q": q, "f": f, "tri": tri, "ordre": ordre, "page_lignes": page, "colonnes": cols,
             "rangees": [(l, [lisible(l.donnees.get(ch)) for ch, _ in cols]) for l in page.object_list],
-            "reperes": reperes, "facettes": calculs.facettes(toutes, value.get("filtre_champ")) if toutes else [],
+            "reperes": reperes, "facettes": calcul["facettes"],
             "carte": carte, "page": (parent_context or {}).get("page"),
             "numeros": numeros_pages(page.number, page.paginator.num_pages),
             "params": urlencode({k: v for k, v in (("q", q), ("f", f), ("tri", tri if tri else ""), ("ordre", ordre if tri else "")) if v}),
