@@ -161,6 +161,13 @@ class Command(BaseCommand):
                                        ("tte", "TTE"), ("trm", "TRM"), ("chapitre", "Chapitre"), ("titre_du_chapitre", "Titre du chapitre"),
                                        ("section", "Section"))})
             self.stdout.write(f"Tarif douanier : {tarif.nb_lignes} positions avec leurs taux")
+        page_tarif = PageContenu.objects.get(slug="tarifs-douaniers")
+        if "chapitres" in page_tarif.chapo.lower():
+            page_tarif.chapo = ("Le droit de douane et la TGC de chaque marchandise, position par position, "
+                                "lus chaque jour sur data.gouv.nc (référentiel de la Direction régionale des douanes).")
+            page_tarif.search_description = page_tarif.chapo
+            page_tarif.save_revision().publish()
+            self.stdout.write("Tarifs douaniers : chapô mis à jour")
 
         # Artisanat : millésime 2024, tous les champs publiés (le jeu ne contient ni nom ni adresse)
         art = SourceDonnees.objects.filter(jeu__startswith="etablissements-artisanaux-actifs").first()
