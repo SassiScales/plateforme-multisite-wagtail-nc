@@ -111,6 +111,13 @@ plus vues et les liens morts relevés dans ses pages.
 .venv/bin/python manage.py envoyer_bilan_mensuel   # UC007 : un e-mail par contributeur (vues + liens à corriger)
 ```
 
+## Instance en ligne (une seule adresse)
+
+`plateforme/settings/enligne.py` + application `deploiement` : sur un hébergement à adresse unique, les
+sites restent distingués par hôte interne, choisi par `/_site/gouv/` ou `/_site/drhfpnc/` ; les anciennes
+adresses se rejouent par `/_ancien/dittt/<chemin>`. `manage.py durcir_demo` remplace les mots de passe de
+démonstration et crée un compte « visiteur » qui ouvre tout le back-office sans rien enregistrer.
+
 ## Limites connues de la démonstration
 
 Habillage provisoire (le design system du GNC le remplacera) ; base SQLite (PostgreSQL en cible) ;
