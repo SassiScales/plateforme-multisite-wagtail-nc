@@ -1,4 +1,7 @@
 """Blocs StreamField « Tableau de données » et « Carte par commune » : configuration sans code, page par page."""
+import re
+from urllib.parse import urlencode
+
 from django.core.paginator import Paginator
 from django.db.models import FloatField, Q
 from django.db.models.fields.json import KT
@@ -7,6 +10,9 @@ from wagtail import blocks
 from wagtail.snippets.blocks import SnippetChooserBlock
 
 from . import calculs
+
+
+DATE_ISO = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.0+)?(?:Z|[+-]00:00)?)?")
 
 
 def lisible(v):
@@ -21,6 +27,12 @@ def lisible(v):
         return f"{v:,}".replace(",", "\u202f")
     if isinstance(v, float):
         return f"{v:,.0f}".replace(",", "\u202f") if v.is_integer() else f"{v:,.2f}".replace(",", "\u202f").replace(".", ",")
+    if v == "EX":  # barème douanier officiel (unrtxtab) : « Tout D&T Taux exempt »
+        return "Exonéré (EX)"
+    if isinstance(v, str):
+        m = DATE_ISO.fullmatch(v)
+        if m:  # 2022-05-12 ou 2022-05-12T00:00:00+00:00 -> 12/05/2022
+            return f"{m.group(3)}/{m.group(2)}/{m.group(1)}"
     return v
 
 
@@ -93,7 +105,9 @@ class TableauBlock(blocks.StructBlock):
         ordre = request.GET.get("ordre", "asc") if request else "asc"
         if tri in dict(cols):
             premiere = source.lignes.exclude(**{f"donnees__{tri}": None}).first()
-            expr = KT(f"donnees__{tri}")
+            # Une date jj/mm/aaaa se trie par sa copie aaaa-mm-jj (champ suffixé _iso) quand la source la fournit
+            cle_tri = f"{tri}_iso" if premiere and f"{tri}_iso" in premiere.donnees else tri
+            expr = KT(f"donnees__{cle_tri}")
             if premiere and isinstance(premiere.donnees.get(tri), (int, float)):
                 expr = Cast(expr, FloatField())
             lignes = lignes.order_by(expr.desc(nulls_last=True) if ordre == "desc" else expr.asc(nulls_last=True))
@@ -110,8 +124,22 @@ class TableauBlock(blocks.StructBlock):
             "rangees": [(l, [lisible(l.donnees.get(ch)) for ch, _ in cols]) for l in page.object_list],
             "reperes": reperes, "facettes": calculs.facettes(toutes, value.get("filtre_champ")) if toutes else [],
             "carte": carte, "page": (parent_context or {}).get("page"),
+            "numeros": numeros_pages(page.number, page.paginator.num_pages),
+            "params": urlencode({k: v for k, v in (("q", q), ("f", f), ("tri", tri if tri else ""), ("ordre", ordre if tri else "")) if v}),
         })
         return ctx
+
+
+def numeros_pages(n, total, autour=2):
+    """Numéros à afficher : la première, la dernière et les voisines de la page courante ; None = « … »."""
+    garde = sorted({1, total, *range(max(1, n - autour), min(total, n + autour) + 1)})
+    out, prec = [], 0
+    for k in garde:
+        if k - prec > 1:
+            out.append(None)
+        out.append(k)
+        prec = k
+    return out
 
 
 class CarteCommunesBlock(blocks.StructBlock):

@@ -6,7 +6,7 @@
   {% if page.search_description or page.chapo %}<meta name="description" content="{{ page.search_description|default:page.chapo|truncatechars:160 }}">{% endif %}
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% if page.full_url %}<link rel="canonical" href="{{ page.full_url }}">{% endif %}
-  {% if page.json_ld %}<script type="application/ld+json">{{ page.json_ld|safe }}</script>{% endif %}
+  {% if json_ld_fiche %}<script type="application/ld+json">{{ json_ld_fiche|safe }}</script>{% elif page.json_ld %}<script type="application/ld+json">{{ page.json_ld|safe }}</script>{% endif %}
   <link rel="preload" href="{% static 'fonts/advent-pro-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/plateforme.css' %}">
   <script src="{% static 'js/plateforme.js' %}" defer></script>

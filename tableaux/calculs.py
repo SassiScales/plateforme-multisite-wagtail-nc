@@ -34,7 +34,7 @@ def indicateur(conf, donnees):
         if not vals:
             return None
         v, n = Counter(map(str, vals)).most_common(1)[0]
-        return v.capitalize() if v.isupper() else v, lib or f"le plus fréquent ({fr(n)} lignes)"
+        return v.capitalize() if v.isupper() and (" " in v or len(v) > 6) else v, lib or f"le plus fréquent ({fr(n)} lignes)"
     if t == "moyenne":
         nums = [n for n in map(nombre, vals) if n is not None]
         return (fr(sum(nums) / len(nums)), lib) if nums else None

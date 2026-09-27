@@ -120,7 +120,9 @@ class PageContenu(RoutablePageMixin, Page):
         conf = self.config_tableau(source_id)
         if not conf:
             raise Http404
-        ligne = get_object_or_404(Ligne, source_id=source_id, identifiant=identifiant)
+        ligne = Ligne.objects.filter(source_id=source_id, identifiant=identifiant).order_by("rang").first()
+        if ligne is None:
+            raise Http404
         champs = [(c["champ"], c["libelle"] or c["champ"]) for c in conf["colonnes_detail"]] or \
             [(k, k) for k in ligne.donnees.keys()]
         position = None
@@ -128,7 +130,8 @@ class PageContenu(RoutablePageMixin, Page):
             position = [round(v, 1) for v in projeter(ligne.lon, ligne.lat)]
         return TemplateResponse(request, "home/ligne_detail.html", {
             "page": self, "ligne": ligne, "conf": conf, "position": position, "communes": calculs.COMMUNES,
-            "valeurs": [(lib, lisible(ligne.donnees.get(ch))) for ch, lib in champs]})
+            "valeurs": [(lib, lisible(ligne.donnees.get(ch))) for ch, lib in champs],
+            "lien": ligne.donnees.get("lien"), "json_ld_fiche": ligne.source.json_ld_ligne(ligne.donnees)})
 
     def rubrique_pk(self):
         """Rubrique de premier niveau (sous l'accueil du site) contenant la page, pour le menu."""

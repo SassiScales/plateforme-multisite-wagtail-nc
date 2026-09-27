@@ -11,7 +11,8 @@
 </section>
 <div class="cadre"><article class="lecture apparait">
   {% if position %}<figure class="mini-carte"><svg viewBox="0 0 {{ communes.viewbox.0 }} {{ communes.viewbox.1 }}" role="img" aria-label="Localisation sur la carte de la Nouvelle-Calédonie"><g class="cp-communes">{% for code, c in communes.communes.items %}<path d="{{ c.d }}"/>{% endfor %}</g><circle class="mini-onde" cx="{{ position.0|unlocalize }}" cy="{{ position.1|unlocalize }}" r="9"/><circle class="mini-point" cx="{{ position.0|unlocalize }}" cy="{{ position.1|unlocalize }}" r="6"/></svg><figcaption>Localisation : {{ ligne.lat|floatformat:4 }}, {{ ligne.lon|floatformat:4 }}</figcaption></figure>{% endif %}
-  <dl class="fiche">{% for lib, v in valeurs %}<div><dt>{{ lib }}</dt><dd>{{ v|default_if_none:"" }}</dd></div>{% endfor %}</dl>
+  <dl class="fiche">{% for lib, v in valeurs %}{% if v or v == 0 %}<div><dt>{{ lib }}</dt><dd>{{ v }}</dd></div>{% endif %}{% endfor %}</dl>
+  {% if lien %}<p><a class="bouton-lien" href="{{ lien }}" rel="noopener">Lire l'avis complet (PDF) <span aria-hidden="true">↗</span></a></p>{% endif %}
   <p class="date">Source : {{ ligne.source.nom }}, lue le {{ ligne.source.derniere_lecture|date:"d/m/Y à H:i" }} · {{ ligne.source.licence }}</p>
   <p><a class="lien-retour" href="{% pageurl page %}"><span aria-hidden="true">←</span> Retour au tableau</a></p>
 </article></div>

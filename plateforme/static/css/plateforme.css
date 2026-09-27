@@ -420,3 +420,19 @@ th[aria-sort] .tri span, th .tri:hover span { opacity:1; color:var(--lagon); }
 .recherche-page div { display:flex; gap:.5rem; }
 .recherche-page input { flex:1; min-width:0; font:inherit; padding:.75rem .9rem; border:1px solid var(--gris); border-radius:8px; }
 .recherche-page button { background:var(--soleil); color:#1b1b1b; border:0; border-radius:8px; padding:0 1.3rem; font:inherit; font-weight:700; cursor:pointer; }
+.bouton-lien { display:inline-flex; align-items:center; gap:.5rem; background:var(--lagon); color:#fff; font-weight:700; text-decoration:none; padding:.75rem 1.1rem; border-radius:8px; }
+.bouton-lien:hover { background:var(--lagon-f); color:#fff; }
+.bouton-lien:focus-visible { outline:3px solid var(--soleil); outline-offset:2px; }
+/* Pagination numérotée des tableaux */
+.pagination-num { flex-wrap:wrap; justify-content:center; gap:.5rem 1rem; }
+.pagination-num ol { list-style:none; display:flex; flex-wrap:wrap; gap:.25rem; margin:0; padding:0; }
+.pagination-num ol a, .pg-courante { display:inline-flex; min-width:2.4rem; height:2.4rem; align-items:center; justify-content:center; padding:0 .5rem; border-radius:8px; font-weight:700; font-variant-numeric:tabular-nums; }
+.pagination-num ol a { color:var(--lagon); text-decoration:none; border:1px solid var(--filet); }
+.pagination-num ol a:hover { background:var(--brume); border-color:var(--turquoise); }
+.pg-courante { background:var(--lagon); color:#fff; }
+.pg-ellipse { display:inline-flex; align-items:center; padding:0 .2rem; color:var(--gris); }
+.pg-pas { color:var(--lagon); font-weight:700; text-decoration:none; }
+.pg-aller { display:flex; align-items:center; gap:.4rem; font-size:.92rem; }
+.pg-aller input { width:5.2rem; font:inherit; padding:.45rem .5rem; border:1px solid var(--gris); border-radius:8px; }
+.pg-aller button { font:inherit; font-weight:700; padding:.45rem .8rem; border:0; border-radius:8px; background:var(--lagon); color:#fff; cursor:pointer; }
+.pagination-num a:focus-visible, .pg-aller :focus-visible { outline:3px solid var(--soleil); outline-offset:2px; }

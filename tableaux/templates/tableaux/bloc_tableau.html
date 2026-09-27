@@ -2,7 +2,7 @@
 <section class="tableau" id="tableau-{{ source.pk }}" data-tableau aria-labelledby="titre-tab-{{ source.pk }}">
   <div class="tableau-tete">
     <h2 id="titre-tab-{{ source.pk }}">{{ value.titre|default:source.nom }}</h2>
-    <p class="tableau-meta"><span class="pastille-direct" aria-hidden="true"></span>Données à jour · lues le {{ source.derniere_lecture|date:"d/m/Y à H:i" }} sur data.gouv.nc{% if source.licence %} · {{ source.licence }}{% endif %}</p>
+    <p class="tableau-meta"><span class="pastille-direct" aria-hidden="true"></span>Données à jour · lues le {{ source.derniere_lecture|date:"d/m/Y à H:i" }} depuis {{ source.origine }}{% if source.licence %} · {{ source.licence }}{% endif %}</p>
   </div>
   <div data-zone-maj>
   {% if reperes %}
@@ -47,10 +47,16 @@
   </div>
   </div>
   {% if page_lignes.has_other_pages %}
-  <nav class="pagination" aria-label="Pages du tableau">
-    {% if page_lignes.has_previous %}<a href="?p={{ page_lignes.previous_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if f %}&amp;f={{ f|urlencode }}{% endif %}{% if tri %}&amp;tri={{ tri }}&amp;ordre={{ ordre }}{% endif %}#tableau-{{ source.pk }}">← Précédent</a>{% else %}<span></span>{% endif %}
-    <span>Page {{ page_lignes.number }} sur {{ page_lignes.paginator.num_pages }}</span>
-    {% if page_lignes.has_next %}<a href="?p={{ page_lignes.next_page_number }}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if f %}&amp;f={{ f|urlencode }}{% endif %}{% if tri %}&amp;tri={{ tri }}&amp;ordre={{ ordre }}{% endif %}#tableau-{{ source.pk }}">Suivant →</a>{% else %}<span></span>{% endif %}
+  <nav class="pagination pagination-num" aria-label="Pages du tableau">
+    {% if page_lignes.has_previous %}<a class="pg-pas" href="?p={{ page_lignes.previous_page_number }}{% if params %}&amp;{{ params }}{% endif %}#tableau-{{ source.pk }}" rel="prev"><span aria-hidden="true">←</span> Précédent</a>{% endif %}
+    <ol>{% for k in numeros %}{% if k %}<li>{% if k == page_lignes.number %}<span class="pg-courante" aria-current="page">{{ k|milliers }}</span>{% else %}<a href="?p={{ k }}{% if params %}&amp;{{ params }}{% endif %}#tableau-{{ source.pk }}" aria-label="Page {{ k }}">{{ k|milliers }}</a>{% endif %}</li>{% else %}<li class="pg-ellipse" aria-hidden="true">…</li>{% endif %}{% endfor %}</ol>
+    {% if page_lignes.has_next %}<a class="pg-pas" href="?p={{ page_lignes.next_page_number }}{% if params %}&amp;{{ params }}{% endif %}#tableau-{{ source.pk }}" rel="next">Suivant <span aria-hidden="true">→</span></a>{% endif %}
+    {% if page_lignes.paginator.num_pages > 7 %}<form class="pg-aller" method="get" action="#tableau-{{ source.pk }}">
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}{% if f %}<input type="hidden" name="f" value="{{ f }}">{% endif %}{% if tri %}<input type="hidden" name="tri" value="{{ tri }}"><input type="hidden" name="ordre" value="{{ ordre }}">{% endif %}
+      <label for="aller-{{ source.pk }}">Aller à la page</label>
+      <input id="aller-{{ source.pk }}" name="p" type="number" inputmode="numeric" min="1" max="{{ page_lignes.paginator.num_pages }}" value="{{ page_lignes.number }}">
+      <button type="submit">OK</button>
+    </form>{% endif %}
   </nav>
   {% endif %}
   {% if value.abonnement %}
