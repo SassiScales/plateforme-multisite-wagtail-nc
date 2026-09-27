@@ -26,8 +26,8 @@ assimilation des diplômes étrangers dans la fonction publique.
 
 ## Direction artistique
 
-L'accueil est une carte marine vivante de la Nouvelle-Calédonie : le trait de côte vient de
-Natural Earth 1:10m (domaine public) et les lignes autour des îles sont des courbes de distance à
+L'accueil est une carte marine vivante de la Nouvelle-Calédonie, dessinée à partir des limites des 33
+communes publiées sur data.gouv.nc ; les lignes autour des îles sont des courbes de distance à
 la côte (3 à 40 km) calculées par `design/carte_nc.py` (NumPy, SciPy, scikit-image). Ce ne sont pas
 des profondeurs mesurées. Palette relevée sur gouv.nc (bleu lagon, turquoise, orange soleil),
 polices Advent Pro et Public Sans hébergées localement. L'emblème (nautile et pin colonnaire) est
@@ -36,6 +36,18 @@ une création originale ; le logo officiel du gouvernement n'est pas utilisé.
 Animations (tracé des lignes, bandeau « en direct », exemples de recherche tapés, compteurs)
 toutes coupées lorsque l'utilisateur demande à réduire les mouvements (RGAA 13.8), et bandeau
 défilant avec bouton de pause.
+
+## Données et cartes
+
+- Sept jeux de data.gouv.nc lus en direct : tarif douanier, prix des médicaments (Sempex), diplômes
+  étrangers, établissements de santé, bornes de recharge, établissements artisanaux, limites communales.
+- **Cartes sans fournisseur tiers** : points (santé, bornes) et cartes par commune (artisanat) tracés
+  sur les limites communales officielles, avec la même projection que l'accueil (`tableaux/carte.py`).
+- **Repères calculés** à chaque lecture (jamais saisis) : nombre, valeurs distinctes, moyenne, écart
+  en % entre deux champs (ex. prix des médicaments aux îles comparés à Nouméa), valeur la plus fréquente.
+- **Filtres en un clic** et **tri** des colonnes, configurables sans code.
+- **Minimisation (RGPD)** : chaque source ne conserve que les champs choisis ; les autres ne sont ni
+  stockés ni indexés.
 
 ## Qualité vérifiée
 
