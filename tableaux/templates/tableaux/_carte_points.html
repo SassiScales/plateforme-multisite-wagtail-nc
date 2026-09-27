@@ -1,0 +1,9 @@
+{% load wagtailroutablepage_tags l10n %}
+<figure class="carte-points" aria-hidden="true">
+  <svg viewBox="0 0 {{ carte.communes.viewbox.0 }} {{ carte.communes.viewbox.1 }}" focusable="false">
+    <g class="cp-courbes">{% for c in carte.communes.courbes %}<path d="{{ c }}"/>{% endfor %}</g>
+    <g class="cp-communes">{% for code, c in carte.communes.communes.items %}<path d="{{ c.d }}"/>{% endfor %}</g>
+    <g class="cp-points">{% for x, y, lib, ident in carte.points %}<a href="{% routablepageurl page 'ligne' source.pk ident %}" tabindex="-1"><circle cx="{{ x|unlocalize }}" cy="{{ y|unlocalize }}" r="4.2" style="--i:{{ forloop.counter0 }}"><title>{{ lib }}</title></circle></a>{% endfor %}</g>
+  </svg>
+  <figcaption>{{ carte.points|length }} point{{ carte.points|length|pluralize }} sur la carte{% if f %} pour « {{ f }} »{% endif %}{% if q %}, recherche « {{ q }} »{% endif %}. Le tableau ci-dessous en donne le détail.</figcaption>
+</figure>

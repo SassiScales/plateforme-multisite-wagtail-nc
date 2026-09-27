@@ -1,107 +1,87 @@
 #!/usr/bin/env python3
-"""Fabrique la carte SVG de la Nouvelle-Calédonie utilisée par l'accueil de la démonstration.
+"""Fabrique les cartes de la Nouvelle-Calédonie à partir des LIMITES COMMUNALES publiées sur data.gouv.nc.
 
-Source : trait de côte Natural Earth 1:10m (domaine public), diffusé par le paquet npm
-world-atlas (countries-10m.json). Les lignes autour des îles sont des courbes de
-DISTANCE À LA CÔTE (3 à 40 km), calculées, évoquant les isobathes d'une carte marine ;
-ce ne sont pas des profondeurs mesurées, et la légende de la page le dit.
+Source : jeu « communes-nc-limites-terrestres-simplifiees » (33 communes, export GeoJSON).
+Sorties :
+  plateforme/templates/carte_nc.svg     fond de l'accueil : communes + courbes de distance à la côte
+  tableaux/communes_nc.json             contours simplifiés par commune, pour les cartes par commune
 
-Usage : .venv-scraping/bin/python carte_nc.py <countries-10m.json> <sortie.svg>
+Les lignes autour des îles sont des courbes de DISTANCE À LA CÔTE (3 à 40 km), calculées ;
+ce ne sont pas des profondeurs mesurées.
+Usage : .venv-scraping/bin/python design/carte_nc.py design/sources/communes-nc.geojson
 """
 import json
-import math
+import os
 import sys
 
 import numpy as np
 from scipy import ndimage
 from skimage import draw, measure
 
-LON0, LON1, LAT0, LAT1 = 163.4, 168.4, -22.95, -19.45   # cadre : Bélep, Loyauté, île des Pins
-RES = 0.012                                                # degrés par pixel de calcul (~1,3 km)
+ICI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(ICI, ".."))
+from tableaux.carte import HAUTEUR, K, LARGEUR, LAT0, LAT1, LON0, LON1, projeter  # noqa: E402
+
+RES = 0.012
 DISTANCES_KM = [3, 8, 15, 25, 40]
-LARGEUR = 1000
 
 
-def decoder(topo, nom="New Caledonia"):
-    """Anneaux (lon, lat) de la géométrie `nom` d'un TopoJSON quantifié."""
-    sx, sy = topo["transform"]["scale"]
-    tx, ty = topo["transform"]["translate"]
-    arcs = []
-    for arc in topo["arcs"]:
-        x = y = 0
-        pts = []
-        for dx, dy in arc:
-            x += dx
-            y += dy
-            pts.append((x * sx + tx, y * sy + ty))
-        arcs.append(pts)
-    geom = next(g for g in topo["objects"]["countries"]["geometries"] if g.get("properties", {}).get("name") == nom)
-    polys = geom["arcs"] if geom["type"] == "MultiPolygon" else [geom["arcs"]]
-    anneaux = []
-    for poly in polys:
-        for anneau in poly:
-            pts = []
-            for i in anneau:
-                a = arcs[i] if i >= 0 else arcs[~i][::-1]
-                pts.extend(a if not pts else a[1:])
-            anneaux.append(pts)
-    return anneaux
+def anneaux(geom):
+    polys = geom["coordinates"] if geom["type"] == "MultiPolygon" else [geom["coordinates"]]
+    return [ring for poly in polys for ring in poly]
 
 
-def main(src, out):
-    anneaux = decoder(json.load(open(src)))
-    k = math.cos(math.radians((LAT0 + LAT1) / 2))            # correction équirectangulaire
-    W = int((LON1 - LON0) / RES)
-    H = int((LAT1 - LAT0) / RES)
+def chemin(points, tol, ferme=True):
+    pts = measure.approximate_polygon(np.array(points), tolerance=tol)
+    if len(pts) < (4 if ferme else 2):
+        return ""
+    return "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts) + ("Z" if ferme else "")
+
+
+def main(src):
+    feats = json.load(open(src))["features"]
+    W, H = int((LON1 - LON0) / RES), int((LAT1 - LAT0) / RES)
     terre = np.zeros((H, W), bool)
-    for a in anneaux:
-        rr = [(LAT1 - la) / RES for lo, la in a]
-        cc = [(lo - LON0) / RES for lo, la in a]
-        r, c = draw.polygon(rr, cc, (H, W))
-        terre[r, c] ^= True
-    km_par_px = RES * 111.32
-    dist = ndimage.distance_transform_edt(~terre, sampling=(km_par_px, km_par_px * k)) if True else None
-
-    echelle = LARGEUR / ((LON1 - LON0) * k)
-    hauteur = (LAT1 - LAT0) * echelle
-
-    def xy(lo, la):
-        return (lo - LON0) * k * echelle, (LAT1 - la) * echelle
-
-    def chemin(points, ferme=True):
-        s = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in points)
-        return s + ("Z" if ferme else "")
-
-    iles = []
-    for a in anneaux:
-        pts = [xy(lo, la) for lo, la in a]
-        pts = measure.approximate_polygon(np.array(pts), tolerance=0.6)
-        if len(pts) >= 4:
-            iles.append(chemin(pts))
-
+    communes = {}
+    for f in feats:
+        p = f["properties"]
+        paths = []
+        for ring in anneaux(f["geometry"]):
+            rr = [(LAT1 - la) / RES for lo, la in ring]
+            cc = [(lo - LON0) / RES for lo, la in ring]
+            r, c = draw.polygon(rr, cc, (H, W))
+            terre[r, c] = True
+            d = chemin([projeter(lo, la) for lo, la in ring], 0.5)
+            if d:
+                paths.append(d)
+        centre = p["geo_point_2d"]
+        communes[p["code_com"]] = {"nom": p["nom_minus"], "nom_maj": p["nom"], "d": " ".join(paths),
+                                   "centre": [round(v, 1) for v in projeter(centre["lon"], centre["lat"])]}
+    km = RES * 111.32
+    dist = ndimage.distance_transform_edt(~terre, sampling=(km, km * K))
     courbes = []
     for d in DISTANCES_KM:
-        paths = []
+        segs = []
         for c in measure.find_contours(dist, d):
-            if len(c) < 12:
-                continue
-            pts = [xy(LON0 + cc * RES, LAT1 - rr * RES) for rr, cc in c]
-            pts = measure.approximate_polygon(np.array(pts), tolerance=0.9)
-            paths.append(chemin(pts, ferme=False))
-        courbes.append((d, " ".join(paths)))
+            if len(c) >= 12:
+                seg = chemin([projeter(LON0 + cc * RES, LAT1 - rr * RES) for rr, cc in c], 0.9, ferme=False)
+                if seg:
+                    segs.append(seg)
+        courbes.append(" ".join(segs))
 
-    nx, ny = xy(166.4572, -22.2758)                            # Nouméa
-    svg = [f'<svg class="carte-nc" viewBox="0 0 {LARGEUR} {hauteur:.0f}" role="img" '
-           'aria-label="Carte de la Nouvelle-Calédonie : Grande Terre, îles Loyauté, île des Pins et Bélep, entourées de lignes de distance à la côte">']
-    for i, (d, p) in enumerate(courbes):
-        svg.append(f'<path class="courbe c{i}" style="--k:{i}" d="{p}" pathLength="1"/>')
-    svg.append('<g class="iles">' + "".join(f'<path d="{p}"/>' for p in iles) + "</g>")
+    nx, ny = projeter(166.4572, -22.2758)
+    svg = [f'<svg class="carte-nc" viewBox="0 0 {LARGEUR} {HAUTEUR:.0f}" role="img" aria-label="Carte de la Nouvelle-Calédonie et de ses 33 communes, '
+           'entourées de lignes de distance à la côte">']
+    svg += [f'<path class="courbe c{i}" style="--k:{i}" d="{p}" pathLength="1"/>' for i, p in enumerate(courbes)]
+    svg.append('<g class="iles">' + "".join(f'<path data-commune="{code}" d="{c["d"]}"/>' for code, c in sorted(communes.items())) + "</g>")
     svg.append(f'<g class="noumea" transform="translate({nx:.1f},{ny:.1f})"><circle class="onde" r="6"/><circle class="point" r="4.5"/>'
-               f'<text x="10" y="18">Nouméa</text></g>')
-    svg.append("</svg>")
-    open(out, "w").write("".join(svg))
-    print(f"{out} : {len(iles)} îles, {sum(len(p) > 0 for _, p in courbes)} courbes, {len(''.join(svg)) // 1024} Ko")
+               '<text x="10" y="18">Nouméa</text></g></svg>')
+    out_svg = os.path.join(ICI, "..", "plateforme", "templates", "carte_nc.svg")
+    open(out_svg, "w").write("".join(svg))
+    out_json = os.path.join(ICI, "..", "tableaux", "communes_nc.json")
+    json.dump({"viewbox": [LARGEUR, round(HAUTEUR)], "courbes": courbes, "communes": communes}, open(out_json, "w"), ensure_ascii=False)
+    print(f"{out_svg} : {os.path.getsize(out_svg) // 1024} Ko ; {out_json} : {len(communes)} communes, {os.path.getsize(out_json) // 1024} Ko")
 
 
 if __name__ == "__main__":
-    main(*sys.argv[1:3])
+    main(sys.argv[1])

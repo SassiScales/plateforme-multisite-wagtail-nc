@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load wagtailcore_tags %}
+{% extends "base.html" %}{% load wagtailcore_tags l10n %}
 {% block title %}{{ valeurs.0.1|default:"Fiche"|truncatechars:60 }}{% endblock %}
 {% block content %}
 <section class="bandeau-page"><div class="bandeau-lignes" aria-hidden="true">{% include "carte_nc.svg" %}</div>
@@ -10,6 +10,7 @@
   <svg class="vague" viewBox="0 0 1440 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 24 C240 4 480 40 720 22 C960 4 1200 36 1440 18 L1440 40 L0 40Z"/></svg>
 </section>
 <div class="cadre"><article class="lecture apparait">
+  {% if position %}<figure class="mini-carte"><svg viewBox="0 0 {{ communes.viewbox.0 }} {{ communes.viewbox.1 }}" role="img" aria-label="Localisation sur la carte de la Nouvelle-Calédonie"><g class="cp-communes">{% for code, c in communes.communes.items %}<path d="{{ c.d }}"/>{% endfor %}</g><circle class="mini-onde" cx="{{ position.0|unlocalize }}" cy="{{ position.1|unlocalize }}" r="9"/><circle class="mini-point" cx="{{ position.0|unlocalize }}" cy="{{ position.1|unlocalize }}" r="6"/></svg><figcaption>Localisation : {{ ligne.lat|floatformat:4 }}, {{ ligne.lon|floatformat:4 }}</figcaption></figure>{% endif %}
   <dl class="fiche">{% for lib, v in valeurs %}<div><dt>{{ lib }}</dt><dd>{{ v|default_if_none:"" }}</dd></div>{% endfor %}</dl>
   <p class="date">Source : {{ ligne.source.nom }}, lue le {{ ligne.source.derniere_lecture|date:"d/m/Y à H:i" }} · {{ ligne.source.licence }}</p>
   <p><a class="lien-retour" href="{% pageurl page %}"><span aria-hidden="true">←</span> Retour au tableau</a></p>

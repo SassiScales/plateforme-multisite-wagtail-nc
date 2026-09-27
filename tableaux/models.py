@@ -39,6 +39,12 @@ class SourceDonnees(index.Indexed, models.Model):
                               help_text="Clause ODSQL « where », ex. prix_cfp is not null")
     chemin_liste = models.CharField("chemin de la liste (REST)", max_length=200, blank=True,
                                     help_text="Clés séparées par des points menant à la liste de lignes, ex. data.items")
+    champs_conserves = models.CharField(
+        "champs conservés", max_length=500, blank=True,
+        help_text="Minimisation (RGPD) : liste des champs gardés, séparés par des virgules ; les autres ne sont ni stockés ni indexés. Vide : tous.")
+    champ_geo = models.CharField(
+        "champ de localisation", max_length=120, blank=True,
+        help_text="Pour la carte : champ point {lon, lat} (ex. geo_point_2d) ou deux champs « latitude,longitude »")
     cle = models.CharField("champ identifiant", max_length=100, blank=True,
                            help_text="Champ unique d'une ligne ; sert aux alertes « nouvelle ligne ». Vide : empreinte de la ligne.")
     max_lignes = models.PositiveIntegerField(default=MAX_LIGNES_DEFAUT)
@@ -52,6 +58,7 @@ class SourceDonnees(index.Indexed, models.Model):
     panels = [
         MultiFieldPanel([FieldPanel("nom"), FieldPanel("type"), FieldPanel("url_base"), FieldPanel("jeu"),
                          FieldPanel("filtre"), FieldPanel("chemin_liste")], heading="Origine des données"),
+        MultiFieldPanel([FieldPanel("champs_conserves"), FieldPanel("champ_geo")], heading="Données gardées et carte"),
         MultiFieldPanel([FieldPanel("cle"), FieldPanel("max_lignes"), FieldPanel("frequence_heures"),
                          FieldPanel("licence")], heading="Lecture"),
         HelpPanel(template="tableaux/panneau_etat.html", heading="État de la source"),
@@ -91,6 +98,26 @@ class SourceDonnees(index.Indexed, models.Model):
         dialecte = csv.Sniffer().sniff(texte[:4096], delimiters=",;\t")
         return list(csv.DictReader(io.StringIO(texte), dialect=dialecte))
 
+    def _position(self, l):
+        """(lat, lon) d'une ligne selon champ_geo, ou (None, None)."""
+        if not self.champ_geo:
+            return None, None
+        try:
+            if "," in self.champ_geo:
+                a, b = [c.strip() for c in self.champ_geo.split(",")]
+                return float(l.get(a)), float(l.get(b))
+            v = l.get(self.champ_geo)
+            if isinstance(v, str):
+                v = json.loads(v.replace("'", '"'))
+            if isinstance(v, dict) and "geometry" in v:
+                lon, lat = v["geometry"]["coordinates"][:2]
+                return float(lat), float(lon)
+            if isinstance(v, dict):
+                return float(v["lat"]), float(v["lon"])
+        except (TypeError, ValueError, KeyError, json.JSONDecodeError):
+            pass
+        return None, None
+
     def lire(self):
         """Lit la source, remplace le cache, renvoie les identifiants des lignes nouvelles.
 
@@ -108,13 +135,18 @@ class SourceDonnees(index.Indexed, models.Model):
             return []
 
         anciennes = set(self.lignes.values_list("identifiant", flat=True))
+        positions = [self._position(l) for l in lignes]
+        garder = [c.strip() for c in self.champs_conserves.split(",") if c.strip()]
+        if garder:
+            lignes = [{k: l.get(k) for k in garder} for l in lignes]
         champs = list(dict.fromkeys(k for l in lignes for k in l.keys()))
         objets = []
         for i, l in enumerate(lignes):
             ident = str(l.get(self.cle)) if self.cle and l.get(self.cle) is not None else \
                 hashlib.sha1(json.dumps(l, sort_keys=True, default=str).encode()).hexdigest()[:16]
             texte = " ".join(str(v) for v in l.values() if v not in (None, ""))[:4000]
-            objets.append(Ligne(source=self, rang=i, identifiant=ident, donnees=l, texte=texte))
+            lat, lon = positions[i]
+            objets.append(Ligne(source=self, rang=i, identifiant=ident, donnees=l, texte=texte, lat=lat, lon=lon))
         with transaction.atomic():
             self.lignes.all().delete()
             Ligne.objects.bulk_create(objets, batch_size=1000)
@@ -143,6 +175,8 @@ class Ligne(index.Indexed, models.Model):
     identifiant = models.CharField(max_length=200, db_index=True)
     donnees = models.JSONField()
     texte = models.TextField(blank=True)
+    lat = models.FloatField(null=True, blank=True)
+    lon = models.FloatField(null=True, blank=True)
 
     search_fields = [index.SearchField("texte"), index.FilterField("source_id")]
 

@@ -1,0 +1,17 @@
+{% load tableaux_tags %}
+<section class="choro" aria-labelledby="titre-choro-{{ source.pk }}">
+  <div class="tableau-tete"><h2 id="titre-choro-{{ source.pk }}">{{ value.titre|default:source.nom }}</h2>
+    <p class="tableau-meta">{{ total|milliers }} {{ value.mesure }} rattachés à une commune · limites communales : data.gouv.nc</p></div>
+  <div class="choro-corps">
+    <figure class="choro-carte" aria-hidden="true">
+      <svg viewBox="0 0 {{ viewbox.0 }} {{ viewbox.1 }}" focusable="false">{% for z in zones %}<path d="{{ z.d }}" style="fill:{{ z.couleur }}" data-n="{{ z.n }}"><title>{{ z.nom }} : {{ z.n|milliers }} {{ value.mesure }}</title></path>{% endfor %}</svg>
+    </figure>
+    <div class="choro-cote">
+      <ul class="choro-legende" aria-label="Légende">{% for c, lib in legende %}<li><span style="background:{{ c }}"></span>{{ lib }}</li>{% endfor %}<li><span style="background:#f3f1ec"></span>aucun</li></ul>
+      <h3>Communes les plus représentées</h3>
+      <ol class="choro-top">{% for z in classement|slice:":8" %}<li><span>{{ z.nom }}</span><strong>{{ z.n|milliers }}</strong><i style="--p:{% widthratio z.n classement.0.n 100 %}%"></i></li>{% endfor %}</ol>
+      <details><summary>Toutes les communes ({{ classement|length }})</summary><table><thead><tr><th scope="col">Commune</th><th scope="col">{{ value.mesure|capfirst }}</th></tr></thead><tbody>{% for z in classement %}<tr><td>{{ z.nom }}</td><td>{{ z.n|milliers }}</td></tr>{% endfor %}</tbody></table>
+      {% if hors %}<p class="date">{{ hors|milliers }} ligne{{ hors|pluralize }} sans commune reconnue.</p>{% endif %}</details>
+    </div>
+  </div>
+</section>

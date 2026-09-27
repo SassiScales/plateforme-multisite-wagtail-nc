@@ -12,7 +12,9 @@ from wagtail.fields import StreamField
 from wagtail.models import Page
 from wagtail.search import index
 
-from tableaux.blocks import TableauBlock, lisible
+from tableaux.blocks import CarteCommunesBlock, TableauBlock, lisible
+from tableaux import calculs
+from tableaux.carte import dans_cadre, projeter
 from tableaux.models import Ligne
 
 # Mise en forme limitée (UC015) : le reste est imposé par le design system.
@@ -45,10 +47,13 @@ CORPS = [
     ("paragraphe", blocks.RichTextBlock(features=TEXTE, icon="pilcrow", label="Paragraphe")),
     ("encadre", EncadreBlock()),
     ("tableau", TableauBlock()),
+    ("carte_communes", CarteCommunesBlock()),
 ]
 
 PICTOS = [("", "Aucun"), ("douane", "Douane et commerce"), ("sante", "Santé"), ("emploi", "Emploi et concours"),
-          ("actualites", "Actualités"), ("donnees", "Textes et données")]
+          ("actualites", "Actualités"), ("donnees", "Textes et données"),
+          ("mobilite", "Mobilité"), ("artisanat", "Artisanat et entreprises"),
+          ("soins", "Soins et établissements"), ("territoire", "Territoire et transports")]
 
 GABARITS = [("standard", "Standard (colonne de lecture)"), ("large", "Large (tableaux, données)"),
             ("accueil", "Accueil de site (chapô et rubriques)")]
@@ -85,8 +90,11 @@ class PageContenu(RoutablePageMixin, Page):
         ligne = get_object_or_404(Ligne, source_id=source_id, identifiant=identifiant)
         champs = [(c["champ"], c["libelle"] or c["champ"]) for c in conf["colonnes_detail"]] or \
             [(k, k) for k in ligne.donnees.keys()]
+        position = None
+        if ligne.lat is not None and ligne.lon is not None and dans_cadre(ligne.lon, ligne.lat):
+            position = [round(v, 1) for v in projeter(ligne.lon, ligne.lat)]
         return TemplateResponse(request, "home/ligne_detail.html", {
-            "page": self, "ligne": ligne, "conf": conf,
+            "page": self, "ligne": ligne, "conf": conf, "position": position, "communes": calculs.COMMUNES,
             "valeurs": [(lib, lisible(ligne.donnees.get(ch))) for ch, lib in champs]})
 
     def rubrique_pk(self):

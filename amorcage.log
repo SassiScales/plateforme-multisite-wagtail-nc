@@ -1,17 +1,21 @@
 Tarif douanier : chapitres (SH2) : 100 lignes, 0 nouvelles
 Prix des médicaments en vigueur (Sempex) : 3000 lignes, 0 nouvelles
+Établissements de santé : 1244 lignes, 0 nouvelles
+Bornes de recharge pour véhicules électriques : 56 lignes, 0 nouvelles
+Établissements artisanaux actifs au 31/12/2023 : 11174 lignes, 0 nouvelles
 Assimilation des diplômes étrangers (fonction publique) : 294 lignes, 0 nouvelles
 Updating backend: default
-default: Rebuilding index <modelsearch.backends.database.sqlite.sqlite.SQLiteIndex object at 0x106ac11f0>
+default: Rebuilding index <modelsearch.backends.database.sqlite.sqlite.SQLiteIndex object at 0x10ae2f3e0>
 default: home.PageContenu          .
 default: home.HomePage             .
 default: tableaux.SourceDonnees    .
-default: tableaux.Ligne            ....
+default: tableaux.Ligne            .......... ......
 default: wagtaildocs.Document      
 default: wagtailimages.Image       
 default: wagtailcore.Page          .
-default: indexed 3404 objects
+default: indexed 15884 objects
 
 
 Démo prête. http://gouv.localhost:8000/  ·  http://drhfpnc.localhost:8000/  ·  admin : http://gouv.localhost:8000/admin/
 Comptes : admin, pole-com, editeur-drh  ·  mot de passe : demo-gnc-2026
+{"pages_lot": 60, "importees": 59, "supprimees": 0, "fusionnees": 1, "a_arbitrer": 7, "redirections_testees_ok": 60, "redirections_attendues": 60, "pages_avec_points": 20, "blocs": 259, "documents_lies": 4}

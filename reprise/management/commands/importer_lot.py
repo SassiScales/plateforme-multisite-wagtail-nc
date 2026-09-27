@@ -97,7 +97,7 @@ class Command(BaseCommand):
             ancienne.delete()
         accueil.refresh_from_db()
         rub = accueil.add_child(instance=PageContenu(
-            title=o["rubrique"], slug=slug_rub, show_in_menus=True, pictogramme="donnees",
+            title=o["rubrique"], slug=slug_rub, show_in_menus=True, pictogramme="territoire",
             chapo=f"Contenus repris automatiquement depuis {recs[0]['url_source'].split('/')[2] if recs else ''} : démonstration de migration du lot 2."))
 
         # Ancien domaine conservé : il ne sert plus que des redirections adresse par adresse
