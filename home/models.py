@@ -59,7 +59,7 @@ class FilBlock(blocks.StructBlock):
         qs = PageContenu.objects.none()
         if racine:
             qs = (PageContenu.objects.live().public().descendant_of(racine).exclude(pk=getattr(page, "pk", None))
-                  .filter(first_published_at__isnull=False).order_by("-first_published_at"))
+                  .filter(first_published_at__isnull=False, show_in_menus=False).order_by("-first_published_at"))
         ctx["publications"] = qs[: value["nombre"]]
         return ctx
 

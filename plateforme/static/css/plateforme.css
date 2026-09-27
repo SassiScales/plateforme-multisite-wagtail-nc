@@ -173,7 +173,7 @@ tbody tr:hover td { background:#f7fbfd; }
 .pied-bas p { margin:0; }
 
 /* Apparitions (activées par le script ; sans script, tout est visible) */
-.js .apparait { opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease; transition-delay:calc(var(--i, 0) * 70ms); }
+.js .apparait { opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease; transition-delay:min(calc(var(--i, 0) * 70ms), 560ms); }
 .js .apparait.vu { opacity:1; transform:none; }
 .js .rangee { animation:entree .35s ease both; animation-delay:calc(min(var(--i, 0), 12) * 25ms); }
 @keyframes entree { from { opacity:0; transform:translateY(6px); } }
@@ -436,3 +436,36 @@ th[aria-sort] .tri span, th .tri:hover span { opacity:1; color:var(--lagon); }
 .pg-aller input { width:5.2rem; font:inherit; padding:.45rem .5rem; border:1px solid var(--gris); border-radius:8px; }
 .pg-aller button { font:inherit; font-weight:700; padding:.45rem .8rem; border:0; border-radius:8px; background:var(--lagon); color:#fff; cursor:pointer; }
 .pagination-num a:focus-visible, .pg-aller :focus-visible { outline:3px solid var(--soleil); outline-offset:2px; }
+
+/* ---- Direction retenue le 28/09 : « Institutionnel » (inspirée du DSFR) : clair, angles vifs, bloc-marque, hiérarchie stricte ---- */
+:root { --rayon:4px; --ombre:none; }
+.entete { border-top:5px solid var(--lagon); }
+.lisere { height:4px; }
+.marque span strong { text-transform:uppercase; letter-spacing:.06em; font-size:1rem; }
+.marque span small { text-transform:uppercase; letter-spacing:.05em; font-weight:700; color:var(--encre); font-size:.72rem; }
+.lagon { background:#f2f7fa !important; color:var(--encre) !important; }
+.lagon::after { display:none !important; }
+.lagon-surtitre { color:var(--lagon) !important; }
+.lagon-titre { color:var(--encre) !important; text-shadow:none !important; }
+.lagon-titre .accent { color:var(--lagon) !important; }
+.lagon .courbe { stroke:var(--lagon) !important; stroke-opacity:.35; }
+.lagon .iles path { fill:#fff !important; stroke:var(--lagon) !important; stroke-width:1 !important; }
+.lagon .noumea text { fill:var(--encre) !important; stroke:#f2f7fa !important; }
+.lagon-recherche { border:2px solid var(--lagon); border-radius:4px !important; box-shadow:none !important; }
+.lagon-recherche button { border-radius:2px !important; background:var(--lagon) !important; color:#fff !important; }
+.lagon-raccourcis a { color:var(--lagon) !important; background:#fff !important; border:1px solid var(--lagon) !important; border-radius:4px !important; }
+.lagon-raccourcis a:hover { background:var(--lagon) !important; color:#fff !important; }
+.lagon-legende { color:var(--gris) !important; }
+.direct { background:#fff; color:var(--encre); border-top:1px solid var(--filet); border-bottom:1px solid var(--filet); }
+.direct a { color:var(--encre) !important; }
+.bandeau-page { background:#fff; border-bottom:1px solid var(--filet); padding-bottom:2rem; }
+.bandeau-page .vague, .bandeau-page .bandeau-lignes { display:none; }
+.bandeau-page h1 { color:var(--lagon); }
+.tuiles a { border-radius:4px; border-top:4px solid var(--lagon); }
+.tuiles a:hover { transform:none; box-shadow:0 0 0 2px var(--lagon); }
+.cartes-pages a, .fil-liste a, .reseau-liste a, .reseau-futur { border-radius:4px !important; }
+.pied { background:#f2f7fa; color:var(--encre); border-top:5px solid var(--lagon); }
+.pied a { color:var(--lagon); }
+.pied-bas { border-top-color:var(--filet); }
+.direct-tete h2, .direct h2 { color:var(--encre) !important; }
+.pied, .pied-bas, .pied-bas p, .horloge, .horloge time { color:var(--encre); }

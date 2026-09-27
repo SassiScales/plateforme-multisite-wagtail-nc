@@ -186,6 +186,11 @@ class Command(BaseCommand):
                 ("date_de_declaration", "Déclaré au répertoire le"), ("anciennete", "Ancienneté (ans)"))}
             self.remplacer_tableau(page, conf)
             self.stdout.write(f"Artisanat 2024 : {art.nb_lignes} établissements")
+        page_art = PageContenu.objects.get(slug="artisanat")
+        if "2023" in page_art.chapo:
+            page_art.chapo = page_art.chapo.replace("31 décembre 2023", "31 décembre 2024").replace("2023", "2024")
+            page_art.save_revision().publish()
+            self.stdout.write("Artisanat : chapô 2024")
 
         # Entreprises : répertoire RIDET (dénomination, enseigne, activité, commune)
         gouv = PageContenu.objects.get(slug="gouv", depth=2)
