@@ -24,5 +24,10 @@ if os.environ.get("DEMO_TEST_HTTP"):  # essai local sans HTTPS uniquement
     SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = False
     CSRF_TRUSTED_ORIGINS.append(f"http://{ADRESSE}")
     STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# SQLite sur le disque réseau de l'hébergeur : connexion conservée entre requêtes (sinon le cache de pages
+# de SQLite est perdu à chaque visite) et 64 Mo de cache mémoire.
+DATABASES["default"]["CONN_MAX_AGE"] = None
+DATABASES["default"]["OPTIONS"] = {"init_command": "PRAGMA cache_size=-65536; PRAGMA temp_store=MEMORY;"}
+
 if os.environ.get("DEMO_DB"):
     DATABASES["default"]["NAME"] = os.environ["DEMO_DB"]
