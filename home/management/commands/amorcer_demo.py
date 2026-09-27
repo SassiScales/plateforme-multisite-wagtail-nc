@@ -195,6 +195,9 @@ class Command(BaseCommand):
         u.groups.add(Group.objects.get(name="Pôle communication"))
         u = U.objects.create_user("editeur-drh", "drh@plateforme.demo", mdp, first_name="Éditeur", last_name="DRH")
         u.groups.add(Group.objects.get(name="Éditeurs DRH"))
+        # Chaque page a un contributeur responsable : il reçoit le bilan mensuel et voit ses liens morts
+        Page.objects.descendant_of(gouv, inclusive=True).update(owner=U.objects.get(username="pole-com"))
+        Page.objects.descendant_of(drh, inclusive=True).update(owner=u)
 
         from wagtail.models import Workflow
         Workflow.objects.filter(name="Moderators approval").update(name="Validation par un administrateur")

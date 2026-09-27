@@ -1,0 +1,10 @@
+<div style="font-family:'Public Sans',Helvetica,sans-serif;color:#102a38;max-width:620px">
+  <div style="background:#006699;color:#fff;padding:18px 22px;border-radius:10px 10px 0 0"><div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#bfe6f3">Bilan mensuel</div>
+  <div style="font-size:24px;font-weight:bold;margin-top:4px">Vos pages : {{ total }} vue{{ total|pluralize }}</div></div>
+  <div style="border:1px solid #d6e2ea;border-top:0;padding:18px 22px;border-radius:0 0 10px 10px">
+  <p>Bonjour {{ u.get_full_name|default:u.username }}, voici le bilan depuis le {{ depuis|date:"d/m/Y" }}.</p>
+  <table style="width:100%;border-collapse:collapse;font-size:14px">{% for l in lignes|slice:":10" %}<tr><td style="padding:6px 0;border-bottom:1px solid #eef2f5">{{ l.page.title }}</td><td style="text-align:right;border-bottom:1px solid #eef2f5"><b>{{ l.vues }}</b></td></tr>{% endfor %}</table>
+  {% if nb_morts %}<h3 style="color:#8a4b00;margin:22px 0 8px">{{ nb_morts }} lien{{ nb_morts|pluralize }} à corriger</h3>
+  {% for p, liens in morts %}<p style="margin:6px 0"><b>{{ p.title }}</b><br>{% for l in liens %}<span style="font-size:13px;color:#46606e">{{ l.url }} ({{ l.libelle }})</span><br>{% endfor %}</p>{% endfor %}
+  {% else %}<p style="color:#1f6b46">Aucun lien mort détecté dans vos pages.</p>{% endif %}
+  </div></div>

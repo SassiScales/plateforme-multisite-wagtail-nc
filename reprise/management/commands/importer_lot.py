@@ -84,12 +84,15 @@ class Command(BaseCommand):
         p.add_argument("--ancien-domaine", required=True, help="hôte de l'ancien site conservé, ex. dittt.localhost")
         p.add_argument("--rubrique", required=True)
         p.add_argument("--rapport", required=True)
+        p.add_argument("--proprietaire", default="pole-com", help="Contributeur responsable des pages reprises (bilan mensuel, liens morts)")
         p.add_argument("--port", type=int, default=8000)
 
     def handle(self, *a, **o):
         recs = [json.loads(l) for l in open(o["lot"])]
         site = Site.objects.get(hostname=o["site"])
         accueil = site.root_page.specific
+        from django.contrib.auth import get_user_model
+        proprio = get_user_model().objects.filter(username=o["proprietaire"]).first()
 
         # Rubrique cible, recréée à chaque passe (reprise rejouable jusqu'à la bascule)
         slug_rub = slugify(o["rubrique"])
@@ -142,7 +145,7 @@ class Command(BaseCommand):
                 else:
                     corps.append(("paragraphe", RichText(nettoyer(b["html"], remplacer_lien))))
             p = PageContenu(title=r["titre"][:255] or "Sans titre", slug=r["_slug"], corps=corps,
-                            chapo=r["description"][:500], search_description=r["description"][:300])
+                            chapo=r["description"][:500], search_description=r["description"][:300], owner=proprio)
             rub.add_child(instance=p)
             if r["publie_le"]:
                 p.first_published_at = datetime.fromisoformat(r["publie_le"])

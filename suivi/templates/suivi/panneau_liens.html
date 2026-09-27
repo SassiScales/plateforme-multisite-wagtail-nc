@@ -1,0 +1,21 @@
+<section class="w-panel" aria-labelledby="titre-suivi" style="margin:0 0 2rem;padding:0 1.25rem">
+  <h2 class="w-h2" id="titre-suivi" style="margin:0 0 1rem">Suivi de vos pages</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem">
+    <div>
+      <h3 class="w-h3" style="margin:0 0 .5rem">Vues sur 30 jours : {{ total_vues }}</h3>
+      <p style="margin:0 0 .75rem;color:var(--w-color-text-meta)">Compteur interne, sans cookie ni adresse IP ; robots exclus.</p>
+      {% if top %}<table class="listing"><thead><tr><th>Page</th><th style="text-align:right">Vues</th></tr></thead><tbody>
+      {% for t in top %}<tr><td><a href="{% url 'wagtailadmin_pages:edit' t.page_id %}">{{ t.page__title }}</a></td><td style="text-align:right">{{ t.n }}</td></tr>{% endfor %}
+      </tbody></table>{% else %}<p>Aucune visite sur la période.</p>{% endif %}
+    </div>
+    <div>
+      <h3 class="w-h3" style="margin:0 0 .5rem">Liens morts : {{ total }}</h3>
+      <p style="margin:0 0 .75rem;color:var(--w-color-text-meta)">Contrôle automatique chaque semaine de tous les liens des pages publiées.</p>
+      {% if liens %}<table class="listing"><thead><tr><th>Page</th><th>Lien</th><th>Statut</th></tr></thead><tbody>
+      {% for l in liens %}<tr><td><a href="{% url 'wagtailadmin_pages:edit' l.page_id %}">{{ l.page.title }}</a></td><td style="word-break:break-all">{{ l.url|truncatechars:60 }}</td><td>{{ l.libelle }}</td></tr>{% endfor %}
+      </tbody></table>
+      {% if total > 8 %}<p><a href="{% url 'wagtailsnippets_suivi_lienmort:list' %}">Voir les {{ total }} liens morts</a></p>{% endif %}
+      {% else %}<p>Aucun lien mort détecté lors du dernier contrôle.</p>{% endif %}
+    </div>
+  </div>
+</section>

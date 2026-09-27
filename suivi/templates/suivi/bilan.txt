@@ -1,0 +1,11 @@
+Bonjour {{ u.get_full_name|default:u.username }},
+
+Depuis le {{ depuis|date:"d/m/Y" }}, vos pages ont été vues {{ total }} fois.
+{% for l in lignes|slice:":10" %}- {{ l.page.title }} : {{ l.vues }} vue{{ l.vues|pluralize }}
+{% endfor %}
+{% if nb_morts %}Liens à corriger ({{ nb_morts }}) :
+{% for p, liens in morts %}- {{ p.title }}{% for l in liens %}
+    {{ l.url }} ({{ l.libelle }}){% endfor %}
+{% endfor %}{% else %}Aucun lien mort détecté dans vos pages.{% endif %}
+
+Plateforme unique des sites du GNC

@@ -100,7 +100,18 @@ Résultat sur l'échantillon : 60 pages reprises (59 migrées, 1 fusionnée), 7 
 60 redirections 301 sur 60 vérifiées en une seule étape. Les contenus repris ne sont pas versés dans ce
 dépôt (dossier `migration/` exclu) : ils appartiennent au gouvernement de la Nouvelle-Calédonie.
 
+## Suivi des pages (application `suivi`)
+
+Chaque page a un contributeur propriétaire. Un compteur interne note les vues par page et par jour,
+sans cookie ni adresse IP, robots exclus. Le tableau de bord de chaque contributeur montre ses pages les
+plus vues et les liens morts relevés dans ses pages.
+
+```bash
+.venv/bin/python manage.py verifier_liens          # UC023 : tous les liens des pages publiées, chaque semaine
+.venv/bin/python manage.py envoyer_bilan_mensuel   # UC007 : un e-mail par contributeur (vues + liens à corriger)
+```
+
 ## Limites connues de la démonstration
 
 Habillage provisoire (le design system du GNC le remplacera) ; base SQLite (PostgreSQL en cible) ;
-e-mails affichés dans la console ; authentification locale (Agent Connect / Keycloak en cible).
+e-mails affichés dans la console ; compteur de vues interne (Matomo auto-hébergé en cible) ; authentification locale (Agent Connect / Keycloak en cible).

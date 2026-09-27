@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "search",
     "tableaux",
     "reprise",
+    "suivi",
     "wagtail.contrib.routable_page",
     "wagtail.contrib.settings",
     "wagtail.contrib.forms",
