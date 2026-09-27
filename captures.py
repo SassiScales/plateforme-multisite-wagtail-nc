@@ -16,6 +16,8 @@ with sync_playwright() as p:
     pg.locator(".carte-points").screenshot(path="captures/sante-carte.jpg", type="jpeg", quality=80)
     pg.goto(B + "/artisanat/"); pg.wait_for_timeout(1200); pg.locator(".choro").screenshot(path="captures/artisanat-communes.jpg", type="jpeg", quality=80)
     pg.goto(B + "/prix-des-medicaments/"); pg.wait_for_timeout(1200); pg.locator(".reperes").screenshot(path="captures/medicaments-reperes.jpg", type="jpeg", quality=80)
+    pg.goto(D + "/offres-emploi/"); pg.wait_for_timeout(1800); shot("avp-offres")
+    pg.goto(B + "/tarifs-douaniers/ligne/13/2516_90_00/"); pg.wait_for_timeout(1800); shot("tarif-fiche")
     pg.goto(B + "/admin/login/"); shot("admin-connexion")
     pg.goto("http://dittt.localhost:8000/acces-et-horaires"); pg.wait_for_timeout(1200); shot("migration-page")
     pg.goto(B + "/transports-et-territoires/"); pg.wait_for_timeout(1200); shot("migration-rubrique")
