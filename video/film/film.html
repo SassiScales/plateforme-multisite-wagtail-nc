@@ -159,7 +159,7 @@ let derniere = -1;
 function fond(t) {
   const suite = derniere >= 0 && Math.abs(t - derniere - 1 / 30) < 1e-3;
   derniere = t;
-  g.save(); g.globalAlpha = suite ? .34 : 1;
+  g.save(); g.globalAlpha = suite ? (t > 56.4 ? .6 : .34) : 1;
   const gr = g.createRadialGradient(W * .62, H * .38, 80, W * .5, H * .5, 1300);
   gr.addColorStop(0, '#0b5f86'); gr.addColorStop(.45, '#00385a'); gr.addColorStop(1, '#00121f');
   g.fillStyle = gr; g.fillRect(0, 0, W, H); g.restore();
@@ -210,7 +210,7 @@ function particules(t) {
     const cfin = nom === 'prix' ? BARRES[i % 3] : cb, cdeb = prec[0] === 'prix' ? BARRES[i % 3] : ca;
     const r = mix(cdeb[0], cfin[0], u) | 0, gg = mix(cdeb[1], cfin[1], u) | 0, b = mix(cdeb[2], cfin[2], u) | 0;
     let alpha = k === 0 ? u : (nom === 'sante' && i >= D.sante.length ? .25 : .85);
-    alpha *= 1 - .9 * clamp((t - 56.8) / 1.2);
+    alpha *= 1 - clamp((t - 56.4) / 1.0);
     const taille = (nom === 'point' ? 2.6 : nom === 'articles' ? 3.4 : 2.3) * respire;
     g.fillStyle = `rgba(${r},${gg},${b},${alpha})`;
     g.beginPath(); g.arc(x + arc, y - arc * .6, taille, 0, 6.283); g.fill();

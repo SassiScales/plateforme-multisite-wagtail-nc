@@ -17,3 +17,9 @@ video/film/apercu/
 video/film/*.wav
 video/film/*.mp4
 video/film/rendu.log
+video/film2/plans/
+video/film2/images/
+video/film2/apercu/
+video/film2/*.wav
+video/film2/*.mp4
+video/film2/*.log

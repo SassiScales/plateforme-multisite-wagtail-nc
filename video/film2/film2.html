@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:"Advent Pro";font-weight:700;src:url("../../plateforme/static/fonts/advent-pro-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Advent Pro";font-weight:600;src:url("../../plateforme/static/fonts/advent-pro-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Public Sans";font-weight:400;src:url("../../plateforme/static/fonts/public-sans-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Public Sans";font-weight:600;src:url("../../plateforme/static/fonts/public-sans-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Public Sans";font-weight:700;src:url("../../plateforme/static/fonts/public-sans-latin-700-normal.woff2") format("woff2")}
+:root{--lagon:#006699;--lagon-f:#00496e;--lagon-ff:#00374f;--turquoise:#3cbcdd;--soleil:#fd9827;--encre:#102a38;--gris:#46606e;--foret:#1f6b46}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#00293d;font-family:"Public Sans",sans-serif}
+#fond{position:absolute;inset:0}
+#scene{position:absolute;inset:0;perspective:2200px;perspective-origin:50% 45%}
+.panneau{position:absolute;left:560px;top:170px;width:1280px;height:800px;border-radius:18px;overflow:hidden;transform-style:preserve-3d;
+  box-shadow:0 50px 120px rgba(0,10,20,.55),0 12px 30px rgba(0,10,20,.35);background:#fff;will-change:transform,opacity}
+.panneau img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top}
+.panneau .reflet{position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.28) 50%,transparent 58%);pointer-events:none}
+.panneau .barre{position:absolute;left:0;right:0;top:0;height:0}
+/* légende au style du site : section-tete */
+#legende{position:absolute;left:90px;top:230px;max-width:470px}
+#legende .surtitre{display:inline-block;background:#e3eefd;color:var(--lagon);font:700 17px "Public Sans";letter-spacing:.06em;text-transform:uppercase;padding:7px 14px;border-radius:999px}
+#legende h2{margin:16px 0 0;font:700 58px/1.02 "Advent Pro";color:#fff;letter-spacing:-.005em;text-shadow:0 4px 30px rgba(0,20,35,.45)}
+#legende h2 em{font-style:normal;color:var(--soleil)}
+#legende p{margin:16px 0 0;font:400 21px/1.45 "Public Sans";color:#cfe8f3;max-width:440px}
+.pastilles{position:absolute;display:flex;gap:12px}
+.pastille{font:600 20px "Public Sans";color:#fff;padding:10px 20px;border-radius:999px;background:rgba(0,41,61,.82);border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,20,35,.3)}
+.pastille.ok{background:#e9fbf0;color:#1f6b46;border-color:#89ecb0}
+#curseur{position:absolute;width:30px;height:30px;border-radius:50%;background:rgba(253,152,39,.92);border:4px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.35);transform:translate(-50%,-50%);z-index:50}
+#onde{position:absolute;border-radius:50%;border:3px solid var(--soleil);transform:translate(-50%,-50%);z-index:49}
+.loupe{position:absolute;border-radius:24px;overflow:hidden;border:4px solid #fff;box-shadow:0 30px 80px rgba(0,10,20,.55);z-index:40;background:#fff}
+.loupe img{position:absolute;transform-origin:0 0}
+#url{position:absolute;left:640px;top:420px;width:1120px;height:92px;border-radius:20px;background:#fff;box-shadow:0 30px 80px rgba(0,10,20,.5);display:flex;align-items:center;padding:0 34px;font:600 36px "Public Sans";color:var(--encre);gap:18px}
+#url .cadenas{width:26px;height:30px;border-radius:6px;background:var(--gris)}
+#code301{position:absolute;font:700 120px "Advent Pro";color:var(--soleil);text-shadow:0 10px 40px rgba(0,0,0,.35)}
+#compteur{position:absolute;font:700 150px/1 "Advent Pro";color:#fff;text-align:center}
+#compteur span{display:block;font:600 26px "Public Sans";color:#9fd7ea;margin-top:10px}
+.feuille{position:absolute;width:420px;height:560px;border-radius:6px;background:#fbf8f2;box-shadow:0 20px 50px rgba(0,0,0,.35);transform-origin:0 50%;overflow:hidden}
+.feuille i{position:absolute;left:36px;height:9px;border-radius:3px;background:#c9cdd1}
+.feuille b{position:absolute;left:36px;top:34px;width:180px;height:14px;border-radius:3px;background:var(--lagon)}
+#fin{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+#fin h1{margin:22px 0 0;font:700 110px/1 "Advent Pro";color:#fff}
+#fin p{margin:18px 0 0;font:600 30px "Public Sans";color:var(--soleil)}
+#fin small{display:block;margin-top:14px;font:400 22px "Public Sans";color:#9fd7ea}
+.cache{display:none !important}
+</style></head>
+<body>
+<canvas id="fond" width="1920" height="1080"></canvas>
+<div id="scene"></div>
+<div id="legende"><span class="surtitre"></span><h2></h2><p></p></div>
+<div id="curseur" class="cache"></div><div id="onde" class="cache"></div>
+<div id="fin" class="cache"><div><svg width="120" height="120" viewBox="0 0 48 48"><circle cx="20" cy="28" r="15" fill="none" stroke="#3cbcdd" stroke-width="3"/><path d="M20 28 m-9 0 a9 9 0 1 1 9 9 a5.5 5.5 0 1 1 -5.5 -5.5 a2.8 2.8 0 1 1 2.8 2.8" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M38 44 L38 8 M34 14 L42 14 M33 20 L43 20 M34 26 L42 26 M33 32 L43 32 M35 38 L41 38" stroke="#89ecb0" stroke-width="2.2" stroke-linecap="round"/><circle cx="38" cy="5" r="2.6" fill="#fd9827"/></svg>
+<h1>Sassi Scales LLC</h1><p>github.com/SassiScales/plateforme-multisite-wagtail-nc</p><small>Consultation 2026-DINUM-52051 · lots 1 et 2</small></div></div>
+<script>
+const D = window.__DONNEES;
+const W = 1920, H = 1080, fond = document.getElementById('fond'), g = fond.getContext('2d'), SC = document.getElementById('scene');
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), mix = (a, b, t) => a + (b - a) * t;
+const eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, eout = t => 1 - Math.pow(1 - t, 3), eback = t => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const CUES = [];                      // événements sonores : [temps, type, paramètre]
+const cue = (t, type, p = 0) => CUES.push([+t.toFixed(3), type, p]);
+
+// ---------- panneaux (vraies captures de la maquette)
+const P = {};
+function panneau(nom) {
+  if (P[nom]) return P[nom];
+  const d = document.createElement('div'); d.className = 'panneau';
+  d.innerHTML = `<img src="plans/${nom}.jpg"><div class="reflet"></div>`;
+  SC.appendChild(d); P[nom] = d; return d;
+}
+const utilises = new Set();
+function montrer(nom, e) {        // e : {x,y,z,ry,rx,rz,s,o,blur,ox,oy}
+  const d = panneau(nom); utilises.add(nom);
+  const o = e.o ?? 1;
+  d.style.opacity = o; d.style.display = o <= 0.001 ? 'none' : 'block';
+  d.style.transformOrigin = `${(e.ox ?? .5) * 100}% ${(e.oy ?? .5) * 100}%`;
+  d.style.transform = `translate3d(${e.x || 0}px,${e.y || 0}px,${e.z || 0}px) rotateY(${e.ry || 0}deg) rotateX(${e.rx || 0}deg) rotateZ(${e.rz || 0}deg) scale(${e.s ?? 1})`;
+  d.style.filter = e.blur ? `blur(${e.blur}px)` : 'none';
+  d.style.zIndex = Math.round(1000 + (e.z || 0));
+  const r = d.querySelector('.reflet'); r.style.transform = `translateX(${((e.reflet ?? -1)) * 60}%)`;
+}
+function img(nom, src) { panneau(nom).querySelector('img').src = `plans/${src}.jpg`; }
+
+// ---------- légende au style du site
+const LG = document.getElementById('legende');
+function legende(t, a, b, surtitre, titre, texte) {
+  const ent = eout(seg(t, a, a + .7)), sor = seg(t, b - .5, b);
+  const o = ent * (1 - sor);
+  if (o <= 0) return false;
+  LG.querySelector('.surtitre').textContent = surtitre;
+  LG.querySelector('h2').innerHTML = titre;
+  LG.querySelector('p').textContent = texte || '';
+  LG.style.opacity = o; LG.style.transform = `translateY(${(1 - ent) * 30 - sor * 20}px)`;
+  return true;
+}
+
+// ---------- curseur, loupes, pastilles
+const CU = document.getElementById('curseur'), ON = document.getElementById('onde');
+function curseur(x, y, clic = -1) {
+  CU.classList.remove('cache'); CU.style.left = x + 'px'; CU.style.top = y + 'px';
+  if (clic >= 0 && clic < 1) { ON.classList.remove('cache'); const r = 20 + clic * 90; ON.style.width = ON.style.height = r + 'px'; ON.style.left = x + 'px'; ON.style.top = y + 'px'; ON.style.opacity = 1 - clic; }
+}
+const L = {};
+function loupe(id, src, t, a, b, cadre, zone) {   // cadre : [x,y,l,h] écran ; zone : [u,v,lu,hv] dans la capture
+  let d = L[id]; if (!d) { d = document.createElement('div'); d.className = 'loupe'; d.innerHTML = `<img src="plans/${src}.jpg">`; document.body.appendChild(d); L[id] = d; }
+  const e = eback(seg(t, a, a + .6)), s = seg(t, b - .4, b), o = clamp(seg(t, a, a + .3)) * (1 - s);
+  d.style.display = o <= 0 ? 'none' : 'block'; d.style.opacity = o;
+  d.style.left = cadre[0] + 'px'; d.style.top = cadre[1] + 'px'; d.style.width = cadre[2] + 'px'; d.style.height = cadre[3] + 'px';
+  d.style.transform = `scale(${mix(.6, 1, e)})`;
+  const im = d.querySelector('img'), k = cadre[2] / (zone[2] * 2880);
+  im.style.width = 2880 * k + 'px'; im.style.left = (-zone[0] * 2880 * k) + 'px'; im.style.top = (-zone[1] * 1800 * k) + 'px';
+}
+const PA = {};
+function pastilles(id, t, a, b, liste, x, y) {
+  let d = PA[id]; if (!d) { d = document.createElement('div'); d.className = 'pastilles'; d.innerHTML = liste.map(([txt, ok]) => `<span class="pastille${ok ? ' ok' : ''}">${txt}</span>`).join(''); document.body.appendChild(d); PA[id] = d; }
+  d.style.left = x + 'px'; d.style.top = y + 'px';
+  [...d.children].forEach((c, i) => { const e = eback(seg(t, a + i * .18, a + i * .18 + .5)), o = clamp(seg(t, a + i * .18, a + i * .18 + .25)) * (1 - seg(t, b - .4, b)); c.style.opacity = o; c.style.transform = `translateY(${(1 - e) * 26}px) scale(${mix(.8, 1, e)})`; });
+  d.style.display = 'flex';
+}
+
+// ---------- fond : lagon profond, lignes de lagon qui dérivent, poussière en profondeur
+const [VW, VH] = D.viewbox;
+const courbes = D.courbes.filter(Boolean).map(d => new Path2D(d));
+const communes = Object.values(D.communes).map(c => ({ p: new Path2D(c.d), n: c.n, nom: c.nom }));
+let poussiere = []; { let s = 11; const r = () => (s = s * 16807 % 2147483647) / 2147483647; for (let i = 0; i < 160; i++) poussiere.push([r() * W, r() * H, .5 + r() * 2.2, r()]); }
+function dessinerFond(t, carte) {
+  const gr = g.createRadialGradient(W * .6, H * .35, 60, W * .5, H * .55, 1350);
+  gr.addColorStop(0, '#0a6f9e'); gr.addColorStop(.5, '#00496e'); gr.addColorStop(1, '#001a2a');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  // lignes de lagon en filigrane, grandes, qui dérivent lentement (profondeur)
+  g.save(); const k = 1.9, dx = -380 + Math.sin(t * .05) * 60, dy = -260 + t * 1.2;
+  g.translate(dx, dy); g.scale(k * W / VW, k * W / VW);
+  g.lineWidth = .9; g.strokeStyle = 'rgba(60,188,221,.13)'; courbes.forEach(p => g.stroke(p));
+  g.restore();
+  // poussière en suspension
+  g.save(); poussiere.forEach(([x, y, r, z]) => { g.fillStyle = `rgba(207,232,243,${.05 + z * .12})`; g.beginPath(); g.arc((x + t * 12 * z) % W, (y - t * 6 * z + H) % H, r, 0, 7); g.fill(); }); g.restore();
+  if (carte) carte();
+}
+
+// ---------- carte (ouverture, santé, artisanat) dans le repère écran
+function carteEcran(sx, ox, oy) { return (x, y) => [ox + x * sx, oy + y * sx]; }
+function dessinerCarte(t, o, sx, ox, oy, rempl) {
+  g.save(); g.globalAlpha = o; g.translate(ox, oy); g.scale(sx, sx);
+  communes.forEach((c, i) => { g.fillStyle = rempl ? rempl(c, i) : 'rgba(251,247,240,.94)'; g.fill(c.p); g.lineWidth = 1 / sx; g.strokeStyle = 'rgba(0,73,110,.35)'; g.stroke(c.p); });
+  g.restore();
+}
+
+// ---------- scènes
+const DUREE = 88;
+function render(t) {
+  // tout masquer, chaque scène réaffiche ce qu'elle utilise
+  Object.values(P).forEach(d => d.style.display = 'none');
+  LG.style.opacity = 0; CU.classList.add('cache'); ON.classList.add('cache');
+  Object.values(L).forEach(d => d.style.display = 'none');
+  Object.values(PA).forEach(d => d.style.display = 'none');
+  document.querySelectorAll('.temp').forEach(e => e.remove());
+  document.getElementById('fin').classList.add('cache');
+  let carte = null;
+
+  // 1. OUVERTURE 0 - 7,2 : lignes du lagon qui se tracent, communes qui apparaissent
+  if (t < 7.6) {
+    const sx = .95, ox = W / 2 - VW * sx / 2 + 180, oy = H / 2 - VH * sx / 2 + 40;
+    carte = () => {
+      const tr = seg(t, .2, 3.2);
+      g.save(); g.translate(ox, oy); g.scale(sx, sx); g.lineWidth = 1.6 / sx;
+      courbes.forEach((p, i) => { g.strokeStyle = `rgba(60,188,221,${.75 - i * .1})`; g.setLineDash([2000 * tr * (1 + i * .2), 99999]); g.stroke(p); });
+      g.restore(); g.setLineDash([]);
+      dessinerCarte(t, eout(seg(t, 2.2, 3.6)) * (1 - seg(t, 6.8, 7.6)), sx, ox, oy);
+      // Nouméa
+      const [nx, ny] = [ox + 611.4 * sx, oy + 606.1 * sx], p = seg(t, 3.4, 3.8);
+      if (p > 0) { g.fillStyle = '#fd9827'; g.beginPath(); g.arc(nx, ny, 9 * eback(p), 0, 7); g.fill(); g.strokeStyle = `rgba(253,152,39,${1 - (t * .6 % 1)})`; g.lineWidth = 3; g.beginPath(); g.arc(nx, ny, 9 + (t * .6 % 1) * 40, 0, 7); g.stroke(); }
+    };
+    legende(t, .6, 3.4, 'Gouvernement de la Nouvelle-Calédonie', '45 sites.', '21 directions, autant de back-offices, de versions de Drupal et de mots de passe.');
+    legende(t, 3.6, 7.2, 'Consultation 2026-DINUM-52051', '45 sites.<br><em>Une plateforme.</em>', 'La démonstration Sassi Scales LLC, sur les données ouvertes de data.gouv.nc.');
+    if (t > 3.55 && t < 3.6) {} ;
+  }
+
+  // 2. PLUSIEURS SITES 7,2 - 16,8
+  if (t >= 6.8 && t < 17.2) {
+    const a = eout(seg(t, 7.0, 8.4)), b = eout(seg(t, 7.4, 8.8)), r = eio(seg(t, 11.6, 12.8)), fin = seg(t, 16.4, 17.2);
+    montrer('gouv-accueil', { x: mix(-1400, -330, a) - r * 900, y: 60, z: -260 - r * 600, ry: 26, s: .78, o: (1 - r * .6) * (1 - fin), reflet: mix(-1, 1, seg(t, 8, 10)) });
+    montrer('drh-accueil', { x: mix(1400, 330, b) + r * 900, y: 60, z: -260 - r * 600, ry: -26, s: .78, o: (1 - r * .6) * (1 - fin), reflet: mix(-1, 1, seg(t, 8.4, 10.4)) });
+    const c = eout(seg(t, 12.0, 13.4));
+    montrer('admin-arbre', { x: 0, y: mix(900, 90, c), z: mix(-400, 0, c), rx: mix(18, 4, c), s: .86, o: c * (1 - fin), reflet: mix(-1, 1, seg(t, 13, 15)) });
+    legende(t, 7.6, 11.8, 'Multi-site', 'Chaque direction garde<br><em>son adresse</em>.', 'gouv.nc et drhfpnc.gouv.nc : deux sites, une seule instance.');
+    legende(t, 12.2, 16.8, 'Un seul back-office', 'Des droits<br><em>hérités par direction</em>.', 'Le pôle communication voit tout ; les éditeurs DRH, leur site seulement.');
+    pastilles('sites', t, 13.8, 16.6, [['gouv.nc'], ['drhfpnc.gouv.nc'], ['Validation par un administrateur', 1]], 400, 960);
+  }
+
+  // 3. RECHERCHE 16,8 - 26,4
+  if (t >= 16.4 && t < 26.8) {
+    const e = eout(seg(t, 16.6, 17.8)), z = eio(seg(t, 18.0, 19.2)), fin = seg(t, 26.2, 26.8);
+    const n = Math.min(9, Math.max(0, Math.floor((t - 19.4) / .22)));
+    const res = eio(seg(t, 22.0, 22.9));
+    img('gouv-accueil', t < 19.4 ? 'rech-00' : `rech-${String(n).padStart(2, '0')}`);
+    montrer('gouv-accueil', { x: 0, y: mix(700, 60, e), z: mix(-600, 0, e) - res * 300, rx: mix(22, 0, e), s: mix(.8, 1.3, z), ox: .3, oy: .6, o: (1 - res) * (1 - fin) });
+    montrer('rech-resultats', { x: mix(900, 0, res), y: 40, z: mix(-500, 0, res), ry: mix(-30, 0, res), s: .88, o: res * (1 - fin), reflet: mix(-1, 1, seg(t, 23, 25)) });
+    if (t > 18.6 && t < 22) { const cl = seg(t, 19.0, 19.35); curseur(mix(1100, 700, eout(seg(t, 18.4, 19.0))), mix(900, 700, eout(seg(t, 18.4, 19.0))), t > 19.0 && t < 19.35 ? cl : -1); }
+    legende(t, 17.0, 21.8, 'Recherche', 'Elle propose<br><em>de vrais exemples</em>.', 'Tirés des données du site, pas écrits à la main.');
+    legende(t, 22.2, 26.4, 'Recherche du site', 'Pages <em>et</em> lignes<br>des tableaux.', 'Chaque site cherche dans ses propres données (UC018, UC022).');
+  }
+
+  // 4. TABLEAUX 26,4 - 38,4
+  if (t >= 26.0 && t < 38.8) {
+    const e = eout(seg(t, 26.2, 27.4)), fin = seg(t, 38.2, 38.8);
+    const f = t > 31.2 ? Math.min(9, Math.floor((t - 31.2) / .2)) : 0, tri = seg(t, 34.6, 35.2);
+    img('medic-reperes', t < 31.2 ? 'medic-reperes' : (tri > 0 ? 'medic-tri' : `medic-filtre-${String(f).padStart(2, '0')}`));
+    montrer('medic-reperes', { x: mix(-1200, 0, e), y: 60, z: -120, ry: mix(35, 0, e), s: .9, o: 1 - fin, reflet: mix(-1, 1, seg(t, 27, 29)) });
+    loupe('reperes', 'medic-reperes', t, 28.0, 30.8, [980, 250, 820, 250], [.44, .19, .42, .105]);
+    if (t > 30.6 && t < 34.6) curseur(mix(1300, 640, eout(seg(t, 30.6, 31.1))), mix(700, 386, eout(seg(t, 30.6, 31.1))), t > 31.0 && t < 31.3 ? seg(t, 31.0, 31.3) : -1);
+    if (t > 34.0 && t < 36.4) curseur(mix(640, 1488, eout(seg(t, 34.0, 34.5))), mix(386, 330, eout(seg(t, 34.0, 34.5))), t > 34.5 && t < 34.8 ? seg(t, 34.5, 34.8) : -1);
+    legende(t, 26.6, 30.9, 'Tableaux de données', 'Des repères<br><em>calculés, jamais saisis</em>.', 'Sur 3 000 médicaments : +5 % en brousse, +7 % aux îles par rapport à Nouméa.');
+    legende(t, 31.1, 34.5, 'Filtre instantané', 'Il réagit<br><em>à chaque lettre</em>.', 'Sans recharger la page ; sans JavaScript, le formulaire classique reste.');
+    legende(t, 34.6, 38.4, 'Tri', 'Un clic<br><em>sur la colonne</em>.', 'Ici, les prix les plus élevés aux îles.');
+  }
+
+  // 5. CARTES 38,4 - 48,0
+  if (t >= 38.0 && t < 48.4) {
+    const sx = .92, ox = W / 2 - VW * sx / 2 + 220, oy = H / 2 - VH * sx / 2 + 70, o = eout(seg(t, 38.2, 39.2)) * (1 - seg(t, 42.2, 43.0));
+    carte = () => {
+      if (o <= 0) return;
+      dessinerCarte(t, o, sx, ox, oy);
+      g.save(); g.globalAlpha = o; g.globalCompositeOperation = 'source-over';
+      D.sante.forEach((p, i) => { const ap = seg(t, 39.0 + i / D.sante.length * 2.4, 39.3 + i / D.sante.length * 2.4); if (ap <= 0) return; const [x, y] = [ox + p[0] * sx, oy + p[1] * sx]; g.fillStyle = '#fd9827'; g.strokeStyle = '#00496e'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 5.5 * eback(ap), 0, 7); g.fill(); g.stroke(); });
+      g.restore();
+    };
+    const c = eout(seg(t, 42.4, 43.4)), d = eout(seg(t, 45.0, 46.0)), fin = seg(t, 47.8, 48.4);
+    montrer('sante-pharmacies', { x: mix(-300, 0, c), y: mix(300, 50, c), z: mix(-500, 0, c) - d * 400, rx: mix(20, 0, c), s: .88, o: c * (1 - d * .7) * (1 - fin) });
+    montrer('sante-fiche', { x: mix(900, 120, d), y: 60, z: -60, ry: mix(-28, -8, d), s: .82, o: d * (1 - fin), reflet: mix(-1, 1, seg(t, 45.5, 47.5)) });
+    if (t > 43.4 && t < 45.0) curseur(mix(1200, 1735, eout(seg(t, 43.4, 44.0))), mix(800, 402, eout(seg(t, 43.4, 44.0))), t > 44.0 && t < 44.3 ? seg(t, 44.0, 44.3) : -1);
+    loupe('mini', 'sante-fiche', t, 46.2, 48.0, [1180, 520, 560, 380], [.08, .20, .36, .25]);
+    legende(t, 38.6, 42.4, 'Cartes', '1 239 établissements<br><em>à leur vraie place</em>.', 'Tracés sur les limites communales officielles, sans fournisseur de fonds de carte.');
+    legende(t, 42.6, 48.0, 'Filtres et fiches', 'Un clic : <em>les pharmacies</em>.<br>Une fiche par ligne.', 'Chaque établissement a son adresse stable et sa localisation.');
+  }
+
+  // 6. ARTISANAT 48,0 - 54,0 : communes qui se remplissent une à une
+  if (t >= 47.8 && t < 54.4) {
+    const sx = 1.0, ox = W / 2 - VW * sx / 2 + 260, oy = H / 2 - VH * sx / 2 + 60, o = eout(seg(t, 48.0, 48.8)) * (1 - seg(t, 53.6, 54.4));
+    const ordre = communes.map((c, i) => [c.n, i]).sort((a, b) => b[0] - a[0]).map(x => x[1]), rang = {}; ordre.forEach((i, k) => rang[i] = k);
+    const maxN = Math.max(...communes.map(c => c.n));
+    carte = () => { if (o <= 0) return; dessinerCarte(t, o, sx, ox, oy, (c, i) => { const ap = eout(seg(t, 48.6 + rang[i] * .09, 49.0 + rang[i] * .09)); const v = Math.pow(c.n / maxN, .35); const col = [mix(227, 0, v), mix(241, 73, v), mix(247, 110, v)]; return `rgba(${col.map(Math.round).join(',')},${mix(.15, 1, ap)})`; }); };
+    const vue = Math.round(communes.filter((c, i) => t > 48.6 + rang[i] * .09).reduce((s, c) => s + c.n, 0));
+    if (o > 0) { const cp = document.createElement('div'); cp.className = 'temp'; cp.id = 'compteur'; cp.style.left = '90px'; cp.style.top = '700px'; cp.style.textAlign = 'left'; cp.style.opacity = o; cp.innerHTML = `${vue.toLocaleString('fr-FR')}<span>établissements artisanaux</span>`; document.body.appendChild(cp); }
+    legende(t, 48.2, 54.0, 'Carte par commune', '33 communes<br><em>colorées par les données</em>.', 'Légende, classement et tableau complet pour l’accessibilité.');
+  }
+
+  // 7. CODE DU TRAVAIL 54,0 - 62,4 : pile de pages feuilletée en 3D, puis la vraie page
+  if (t >= 53.8 && t < 62.8) {
+    const o = eout(seg(t, 54.0, 54.6)) * (1 - seg(t, 57.8, 58.4));
+    if (o > 0) {
+      for (let k = 0; k < 12; k++) {
+        const f = document.createElement('div'); f.className = 'feuille temp';
+        const flip = eio(seg(t, 54.6 + k * .22, 55.3 + k * .22));
+        f.style.left = '760px'; f.style.top = '300px'; f.style.opacity = o; f.style.zIndex = 100 - k;
+        f.style.transform = `perspective(1800px) rotateY(${-flip * 160}deg) translateZ(${-k * 2}px) translate(${k * 1.5}px,${k * 1.5}px)`;
+        f.innerHTML = '<b></b>' + Array.from({ length: 16 }, (_, j) => `<i style="top:${80 + j * 28}px;width:${[330, 300, 345, 210][j % 4]}px"></i>`).join('');
+        document.body.appendChild(f);
+      }
+      const cp = document.createElement('div'); cp.className = 'temp'; cp.id = 'compteur'; cp.style.left = '1290px'; cp.style.top = '430px'; cp.style.opacity = o;
+      cp.innerHTML = `${Math.min(799, Math.round(799 * seg(t, 54.4, 57.4)))}<span>pages de PDF</span>`; document.body.appendChild(cp);
+    }
+    const c = eout(seg(t, 57.9, 59.0)), fin = seg(t, 62.2, 62.8), n = t > 59.8 ? 'code-licenciement' : 'code';
+    img('code', n);
+    montrer('code', { x: 0, y: mix(700, 50, c), z: mix(-600, 0, c), rx: mix(25, 0, c), s: .9, o: c * (1 - fin), reflet: mix(-1, 1, seg(t, 59, 61)) });
+    if (t > 59.0 && t < 60.2) curseur(mix(1100, 560, eout(seg(t, 59.0, 59.5))), mix(800, 548, eout(seg(t, 59.0, 59.5))), t > 59.5 && t < 59.8 ? seg(t, 59.5, 59.8) : -1);
+    loupe('art', 'code-licenciement', t, 60.4, 62.3, [1020, 560, 800, 300], [.03, .74, .58, .2]);
+    legende(t, 54.2, 57.8, 'Code du travail', '799 pages de PDF…', 'Le texte intégral publié par la DTENC, mise à jour du 12 juin 2026.');
+    legende(t, 58.0, 62.4, 'Découpage automatique', '…<em>2 400 articles</em><br>cherchables un par un.', '« licenciement » : 115 articles, chacun avec son adresse.');
+  }
+
+  // 8. MIGRATION 62,4 - 72,0
+  if (t >= 62.2 && t < 72.4) {
+    const o = eout(seg(t, 62.4, 63.0)) * (1 - seg(t, 66.6, 67.2));
+    const texte = 'dittt.gouv.nc/acces-et-horaires', nb = Math.floor(clamp((t - 63.2) / 1.8) * texte.length);
+    if (o > 0) {
+      const u = document.createElement('div'); u.className = 'temp'; u.id = 'url'; u.style.opacity = o;
+      u.style.transform = `translateY(${-eio(seg(t, 65.4, 66.2)) * 120}px)`;
+      u.innerHTML = `<span class="cadenas"></span>${texte.slice(0, nb)}<span style="width:3px;height:40px;background:#006699;opacity:${(t * 2 % 1) > .5 ? 1 : 0}"></span>`;
+      document.body.appendChild(u);
+      const r = eback(seg(t, 65.6, 66.2));
+      if (r > 0) { const c3 = document.createElement('div'); c3.className = 'temp'; c3.id = 'code301'; c3.style.left = '1000px'; c3.style.top = '530px'; c3.style.transform = `scale(${r})`; c3.style.opacity = o; c3.textContent = '301 →'; document.body.appendChild(c3); }
+    }
+    const c = eout(seg(t, 66.8, 67.8)), fin = seg(t, 71.8, 72.4);
+    montrer('migration-arrivee', { x: -120, y: mix(700, 60, c), z: mix(-500, -80, c), ry: mix(0, 12, c), rx: mix(20, 0, c), s: .82, o: c * (1 - fin), reflet: mix(-1, 1, seg(t, 67.5, 69.5)) });
+    if (t > 68.2) { const k = Math.min(60, Math.round(60 * seg(t, 68.4, 70.0))); const cp = document.createElement('div'); cp.className = 'temp'; cp.id = 'compteur'; cp.style.left = '90px'; cp.style.top = '700px'; cp.style.textAlign = 'left'; cp.style.opacity = eout(seg(t, 68.2, 68.6)) * (1 - fin); cp.innerHTML = `${k}/60<span>redirections vérifiées par un robot</span>`; document.body.appendChild(cp); }
+    legende(t, 62.6, 67.0, 'Migration', 'Une ancienne adresse…', 'Les anciens domaines sont conservés et redirigés adresse par adresse.');
+    legende(t, 67.2, 72.0, 'Reprise réelle de dittt.gouv.nc', '…arrive <em>en une seule</em><br>redirection.', '60 pages reprises en blocs du design system.');
+  }
+
+  // 9. CONFIANCE 72,0 - 81,6
+  if (t >= 71.8 && t < 82.0) {
+    const a = eout(seg(t, 72.0, 73.0)), b = eout(seg(t, 75.4, 76.4)), fin = seg(t, 81.4, 82.0);
+    montrer('admin-connexion', { x: mix(-1000, -300, a) - b * 200, y: 60, z: -150 - b * 400, ry: mix(30, 18, a), s: .8, o: a * (1 - b * .55) * (1 - fin), reflet: mix(-1, 1, seg(t, 72.6, 74.6)) });
+    montrer('admin-source', { x: mix(1000, 260, b), y: 60, z: -60, ry: mix(-30, -14, b), s: .82, o: b * (1 - fin), reflet: mix(-1, 1, seg(t, 76, 78)) });
+    loupe('min', 'admin-source', t, 76.8, 79.2, [980, 600, 800, 250], [.36, .44, .44, .16]);
+    legende(t, 72.4, 75.8, 'Connexion', 'Agent Connect<br><em>pour les agents</em>.', 'Authentification unique du GNC, prévue dès la conception (UC002).');
+    legende(t, 76.0, 81.6, 'Données personnelles', 'Minimisation<br><em>dès la lecture</em>.', 'Seuls les champs choisis sont stockés et indexés.');
+    pastilles('conf', t, 79.0, 81.6, [['0 violation WCAG 2.1 AA', 1], ['Sécurité du contenu stricte', 1], ['Aucun appel à un tiers', 1]], 300, 950);
+  }
+
+  // 10. FIN 81,6 - 88
+  if (t >= 81.2) {
+    const f = document.getElementById('fin'); f.classList.remove('cache');
+    const e = eout(seg(t, 81.8, 83.0)); f.style.opacity = e * (1 - seg(t, 87.2, 88)); f.firstElementChild.style.transform = `translateY(${(1 - e) * 40}px)`;
+  }
+
+  dessinerFond(t, carte);
+}
+window.render = render;
+window.DUREE = DUREE;
+
+// ---------- partition sonore (cohérente avec les scènes ci-dessus)
+[0.2, 7.0, 16.6, 26.2, 38.2, 48.0, 54.0, 62.4, 72.0, 81.8].forEach((s, i) => cue(s, 'section', i));
+[7.0, 7.4, 12.0].forEach(s => cue(s, 'glisse', 1)); cue(16.6, 'glisse', 2); cue(22.0, 'glisse', 3); cue(26.2, 'glisse', 4);
+cue(28.0, 'loupe'); cue(19.0, 'clic'); for (let i = 0; i < 9; i++) cue(19.4 + i * .22, 'touche', i);
+cue(31.0, 'clic'); for (let i = 0; i < 9; i++) cue(31.2 + i * .2, 'touche', i); cue(34.5, 'clic'); cue(34.6, 'tri');
+for (let i = 0; i < 48; i++) cue(39.0 + i * .05, 'point', i); cue(42.4, 'glisse', 5); cue(44.0, 'clic'); cue(45.0, 'glisse', 6); cue(46.2, 'loupe');
+for (let i = 0; i < 33; i++) cue(48.6 + i * .09, 'commune', i);
+for (let k = 0; k < 12; k++) cue(54.6 + k * .22, 'page', k); cue(57.9, 'glisse', 7); cue(59.5, 'clic'); cue(60.4, 'loupe');
+for (let i = 0; i < 31; i++) cue(63.2 + i * 1.8 / 31, 'touche', i); cue(65.6, 'redirection'); cue(66.8, 'glisse', 8); cue(70.0, 'succes');
+cue(72.0, 'glisse', 9); cue(75.4, 'glisse', 10); cue(76.8, 'loupe'); [79.0, 79.18, 79.36].forEach((s, i) => cue(s, 'badge', i));
+cue(81.8, 'final');
+window.CUES = CUES;
+['gouv-accueil','drh-accueil','admin-arbre','rech-resultats','medic-reperes','sante-pharmacies','sante-fiche','code','migration-arrivee','admin-connexion','admin-source'].forEach(panneau);
+Object.values(P).forEach(d => d.style.display = 'none');
+const PRE = [...Array(10).keys()].map(i => `rech-0${i}`).concat([...Array(10).keys()].map(i => `medic-filtre-0${i}`), ['medic-tri','code-licenciement','code-article']).map(n => { const i = new Image(); i.src = `plans/${n}.jpg`; return i; });
+window.pret = () => [...document.images, ...PRE].every(i => i.complete);
+</script>
+</body></html>
