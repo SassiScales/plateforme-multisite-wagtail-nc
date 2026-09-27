@@ -8,7 +8,7 @@ with sync_playwright() as p:
     b = p.chromium.launch(args=["--host-resolver-rules=MAP *.localhost 127.0.0.1"])
     pg = b.new_page(viewport={"width": 1280, "height": 820}, device_scale_factor=1.5)
     shot = lambda n: pg.screenshot(path=f"captures/{n}.jpg", type="jpeg", quality=78)
-    pg.goto(B + "/"); pg.wait_for_timeout(1600); shot("accueil")
+    pg.goto(B + "/"); pg.wait_for_timeout(3800); shot("accueil")
     pg.goto(B + "/prix-des-medicaments/"); pg.fill("input[name=q]", "doliprane"); pg.wait_for_timeout(1500); shot("medicaments-recherche")
     pg.goto(D + "/diplomes-etrangers/"); pg.wait_for_timeout(900); shot("diplomes-drh")
     pg.click(".col-fiche a >> nth=0"); pg.wait_for_timeout(900); shot("fiche-detail")
