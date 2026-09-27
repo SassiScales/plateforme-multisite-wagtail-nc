@@ -32,7 +32,8 @@ class LiensMortsPanneau(Component):
         u = self.request.user
         liens = LienMort.objects.select_related("page")
         vues = PageVue.objects.filter(jour__gte=timezone.localdate() - timedelta(days=30))
-        if not u.is_superuser:
+        # Le compte public de démonstration voit tout, comme un administrateur (il ne peut rien modifier).
+        if not (u.is_superuser or u.groups.filter(name="Visiteurs").exists()):
             liens, vues = liens.filter(page__owner=u), vues.filter(page__owner=u)
         top = list(vues.values("page_id", "page__title").annotate(n=Sum("vues")).order_by("-n")[:6])
         return render_to_string("suivi/panneau_liens.html", {
