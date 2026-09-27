@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "home",
     "search",
     "tableaux",
+    "reprise",
     "wagtail.contrib.routable_page",
     "wagtail.contrib.settings",
     "wagtail.contrib.forms",
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "reprise.middleware.AncienDomaine",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 

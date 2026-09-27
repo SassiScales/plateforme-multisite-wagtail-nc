@@ -1,6 +1,6 @@
 # Plateforme multi-site Wagtail et module « tableaux de données »
 
-Démonstration technique réalisée par Repflow (Sassi Scales LLC) en septembre 2026, à l'appui de la
+Démonstration technique réalisée par Sassi Scales LLC en septembre 2026, à l'appui de la
 consultation 2026-DINUM-52051 du gouvernement de la Nouvelle-Calédonie. Elle fonctionne sur des
 **données ouvertes réelles de data.gouv.nc**, lues en direct.
 
@@ -68,6 +68,25 @@ http://gouv.localhost:8000/admin/ (comptes `admin`, `pole-com`, `editeur-drh`).
   liste et de la fiche détail, la recherche, le nombre de lignes et l'alerte e-mail.
 - **`lire_sources`** : commande à planifier (cron ou Celery beat) ; relit les sources dues et
   envoie un seul e-mail par abonné et par lecture.
+
+## Reprise de contenus Drupal (application `reprise`)
+
+Chaîne rejouable jusqu'à la bascule, testée sur 60 pages publiques de dittt.gouv.nc (Drupal 10) :
+
+```
+# 1. inventaire public du site (robots.txt respecté) : voir audit/crawl.py dans le dossier de l'offre
+# 2. extraction des pages vers un lot JSON Lines (type Drupal, titre, corps, dates, images, documents)
+.venv/bin/python manage.py extraire_drupal --inventaire inv_dittt.gouv.nc.sqlite --hote dittt.gouv.nc \
+    --sortie migration/lots/dittt.jsonl --max 60
+# 3. import : décision (migrer, fusionner, à arbitrer, supprimer), pages en blocs du design system,
+#    liens internes réécrits, redirections 301 sur l'ancien domaine conservé, robot de vérification
+.venv/bin/python manage.py importer_lot migration/lots/dittt.jsonl --site gouv.localhost \
+    --ancien-domaine dittt.localhost --rubrique "Transports et territoires" --rapport migration/rapports/dittt
+```
+
+Résultat sur l'échantillon : 60 pages reprises (59 migrées, 1 fusionnée), 7 signalées à arbitrer,
+60 redirections 301 sur 60 vérifiées en une seule étape. Les contenus repris ne sont pas versés dans ce
+dépôt (dossier `migration/` exclu) : ils appartiennent au gouvernement de la Nouvelle-Calédonie.
 
 ## Limites connues de la démonstration
 

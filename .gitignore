@@ -6,3 +6,5 @@ runserver.log
 media/
 static/
 .DS_Store
+migration/lots/
+migration/rapports/

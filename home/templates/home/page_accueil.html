@@ -20,9 +20,8 @@
 
 {% lignes_en_direct 18 as direct %}{% if direct %}
 <section class="direct" aria-labelledby="titre-direct">
-  <div class="cadre direct-tete"><h2 id="titre-direct"><span class="pastille-direct" aria-hidden="true"></span>En direct de data.gouv.nc</h2>
-    <button type="button" class="direct-pause" data-pause aria-pressed="false" aria-label="Mettre en pause le défilement" title="Mettre en pause le défilement"><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect class="ic-pause" x="3" y="2" width="3.4" height="12" rx="1"/><rect class="ic-pause" x="9.6" y="2" width="3.4" height="12" rx="1"/><path class="ic-lecture" d="M4 2.5v11l9.5-5.5z"/></svg></button></div>
-  <div class="direct-rail" data-rail>
+  <div class="cadre direct-tete"><h2 id="titre-direct"><span class="pastille-direct" aria-hidden="true"></span>En direct de data.gouv.nc</h2></div>
+  <div class="direct-rail" data-rail tabindex="0" aria-label="Lignes récentes des tableaux de données, défilement horizontal">
     <ul class="direct-liste">{% for d in direct %}<li><a href="{{ d.url }}"><span class="direct-rub">{{ d.rubrique }}</span>{{ d.texte|truncatechars:70 }}</a></li>{% endfor %}</ul>
   </div>
 </section>
