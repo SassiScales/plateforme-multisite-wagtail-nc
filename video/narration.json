@@ -1,0 +1,22 @@
+[
+ {"id": "intro", "voix": "Voici la démonstration de Sassi Scales LLC pour la plateforme unique des sites du gouvernement de la Nouvelle-Calédonie."},
+ {"id": "accueil", "voix": "Un seul back-office pour tous les sites du gouvernement de la Nouvelle-Calédonie. La carte est tracée depuis les limites des trente-trois communes publiées sur data point gouv point N C.", "fichier": "test-ines.wav"},
+ {"id": "recherche", "voix": "La recherche propose de vrais exemples, tirés des données du site."},
+ {"id": "direct", "voix": "Ce bandeau fait défiler, en direct, des lignes lues à la source."},
+ {"id": "tuiles", "voix": "Chaque rubrique indique le volume de données qu'elle tient à jour."},
+ {"id": "reperes", "voix": "Sur trois mille médicaments, les repères sont calculés automatiquement : un médicament coûte en moyenne cinq pour cent de plus en brousse, et sept pour cent de plus aux îles, qu'à Nouméa."},
+ {"id": "filtre", "voix": "Le tableau se filtre pendant la frappe, sans recharger la page."},
+ {"id": "tri", "voix": "Un clic sur une colonne la trie. Ici, les prix les plus élevés aux îles."},
+ {"id": "sante", "voix": "En mode carte, mille deux cent trente-neuf établissements de santé sont placés sur les limites communales officielles, sans fournisseur de fonds de carte extérieur."},
+ {"id": "pharmacies", "voix": "Un filtre en un clic : les pharmacies."},
+ {"id": "fiche", "voix": "Chaque ligne a sa fiche, avec sa localisation."},
+ {"id": "artisanat", "voix": "La carte par commune situe les onze mille cent soixante-quatorze établissements artisanaux, avec une légende, et un tableau complet pour l'accessibilité."},
+ {"id": "code", "voix": "Les sept cent quatre-vingt-dix-neuf pages du code du travail deviennent deux mille quatre cents articles, que l'on retrouve un par un."},
+ {"id": "drh", "voix": "Même plateforme, autre site : le site de la fonction publique garde son adresse, ses rubriques et ses données."},
+ {"id": "diplomes", "voix": "Ici, les diplômes étrangers reconnus, filtrés par pays."},
+ {"id": "migration", "voix": "Pour la migration, une ancienne adresse du site de la DITTT arrive, en une seule redirection, sur la page reprise. Soixante pages ont été reprises, et chaque redirection a été vérifiée par un robot."},
+ {"id": "connexion", "voix": "Les agents se connecteront avec Agent Connect."},
+ {"id": "backoffice", "voix": "Dans le back-office, chaque direction administre ses sites et ses rubriques, avec des droits hérités."},
+ {"id": "source", "voix": "Une source de données se configure sans code, en ne gardant que les champs utiles : la minimisation des données commence dès la lecture."},
+ {"id": "fin", "voix": "Le code de cette démonstration est public, sur GitHub. Merci de votre attention."}
+]

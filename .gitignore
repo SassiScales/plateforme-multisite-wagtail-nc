@@ -9,3 +9,6 @@ static/
 migration/lots/
 migration/rapports/
 design/sources/*.geojson
+video/brut/
+video/*.mp4
+video/voix/

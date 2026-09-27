@@ -4,16 +4,17 @@ Prix des médicaments en vigueur (Sempex) : 3000 lignes, 0 nouvelles
 Bornes de recharge pour véhicules électriques : 56 lignes, 0 nouvelles
 Établissements artisanaux actifs au 31/12/2023 : 11174 lignes, 0 nouvelles
 Assimilation des diplômes étrangers (fonction publique) : 294 lignes, 0 nouvelles
+Code du travail de Nouvelle-Calédonie (DTENC, mise à jour du 12/06/2026) : 27/09/2026 11:53 : Could not determine delimiter
 Updating backend: default
-default: Rebuilding index <modelsearch.backends.database.sqlite.sqlite.SQLiteIndex object at 0x10ae2f3e0>
+default: Rebuilding index <modelsearch.backends.database.sqlite.sqlite.SQLiteIndex object at 0x1061786e0>
 default: home.PageContenu          .
 default: home.HomePage             .
 default: tableaux.SourceDonnees    .
 default: tableaux.Ligne            .......... ......
-default: wagtaildocs.Document      
+default: wagtaildocs.Document      .
 default: wagtailimages.Image       
 default: wagtailcore.Page          .
-default: indexed 15884 objects
+default: indexed 15887 objects
 
 
 Démo prête. http://gouv.localhost:8000/  ·  http://drhfpnc.localhost:8000/  ·  admin : http://gouv.localhost:8000/admin/

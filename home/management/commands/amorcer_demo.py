@@ -4,7 +4,12 @@ Deux sites dans un seul back-office, des sources data.gouv.nc lues en direct, de
 droits hérités par direction, un circuit de validation et une redirection 301.
 Usage : python manage.py amorcer_demo [--mot-de-passe X] [--port 8000]
 """
+import os
 import secrets
+
+from django.conf import settings
+from django.core.files import File
+from wagtail.documents.models import Document
 
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth import get_user_model
@@ -133,6 +138,24 @@ class Command(BaseCommand):
                            filtre="secteur_d_activite",
                            reperes=[rep("nombre", libelle="établissements actifs"), rep("frequent", "secteur_d_activite", libelle="secteur le plus représenté"),
                                     rep("moyenne", "anciennete", libelle="ans d'ancienneté moyenne")])]))
+
+        # Code du travail : PDF intégral de la DTENC découpé en articles (reprise/convertir_code_travail), déposé en CSV
+        csv_code = os.path.join(settings.BASE_DIR, "migration", "code-travail.csv")
+        if os.path.exists(csv_code):
+            with open(csv_code, "rb") as f:
+                doc = Document(title="Code du travail de Nouvelle-Calédonie, articles (mise à jour du 12/06/2026)")
+                doc.file.save("code-travail-nc.csv", File(f), save=True)
+            code = SourceDonnees.objects.create(nom="Code du travail de Nouvelle-Calédonie (DTENC, mise à jour du 12/06/2026)", type="csv",
+                                                document=doc, cle="numero", max_lignes=5000, licence="Texte officiel publié par la DTENC")
+            gouv.add_child(instance=PageContenu(
+                title="Code du travail", slug="code-du-travail", pictogramme="donnees", gabarit="large", show_in_menus=True,
+                chapo="Le code du travail de Nouvelle-Calédonie, article par article : recherche dans le texte, filtre par livre, une adresse par article.",
+                corps=[("alerte", {"niveau": "info", "message": RichText("<p>Démonstration : les 799 pages du PDF intégral publié par la DTENC ont été découpées automatiquement en articles. Le texte officiel reste celui du PDF.</p>")}),
+                       tableau(code, "Articles du code du travail", [("numero", "Article"), ("chapitre", "Chapitre"), ("extrait", "Début du texte")],
+                               detail=[("numero", "Article"), ("nature", "Nature"), ("livre", "Livre"), ("chapitre", "Chapitre"), ("texte", "Texte"), ("page", "Page du PDF")],
+                               filtre="livre", par_page=20,
+                               reperes=[rep("nombre", libelle="articles"), rep("distincts", "chapitre", libelle="chapitres"),
+                                        rep("frequent", "nature", libelle="nature la plus fréquente")])]))
 
         # --- Site drhfpnc (même back-office, adresse dédiée)
         drh = racine.add_child(instance=HomePage(

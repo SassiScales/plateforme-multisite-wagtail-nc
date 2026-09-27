@@ -31,8 +31,10 @@ class SourceDonnees(index.Indexed, models.Model):
     ]
     nom = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=TYPES, default="opendatasoft")
+    document = models.ForeignKey("wagtaildocs.Document", null=True, blank=True, on_delete=models.SET_NULL, related_name="+",
+                                 help_text="CSV : fichier déposé dans la médiathèque (prioritaire sur l'adresse)")
     url_base = models.URLField(
-        "adresse", help_text="Opendatasoft : https://data.gouv.nc ; REST : adresse complète de l'API ; CSV : adresse du fichier")
+        "adresse", blank=True, help_text="Opendatasoft : https://data.gouv.nc ; REST : adresse complète de l'API ; CSV : adresse du fichier")
     jeu = models.CharField("identifiant du jeu de données", max_length=200, blank=True,
                            help_text="Opendatasoft uniquement, par exemple sempex_prix_medicaments_en_vigueur")
     filtre = models.CharField("filtre à la lecture (Opendatasoft)", max_length=300, blank=True,
@@ -56,7 +58,7 @@ class SourceDonnees(index.Indexed, models.Model):
     nb_lignes = models.PositiveIntegerField(default=0, editable=False)
 
     panels = [
-        MultiFieldPanel([FieldPanel("nom"), FieldPanel("type"), FieldPanel("url_base"), FieldPanel("jeu"),
+        MultiFieldPanel([FieldPanel("nom"), FieldPanel("type"), FieldPanel("url_base"), FieldPanel("document"), FieldPanel("jeu"),
                          FieldPanel("filtre"), FieldPanel("chemin_liste")], heading="Origine des données"),
         MultiFieldPanel([FieldPanel("champs_conserves"), FieldPanel("champ_geo")], heading="Données gardées et carte"),
         MultiFieldPanel([FieldPanel("cle"), FieldPanel("max_lignes"), FieldPanel("frequence_heures"),
@@ -92,11 +94,17 @@ class SourceDonnees(index.Indexed, models.Model):
         return data
 
     def _csv(self):
-        r = requests.get(self.url_base, timeout=TIMEOUT)
-        r.raise_for_status()
-        texte = r.content.decode("utf-8-sig", "replace")
-        dialecte = csv.Sniffer().sniff(texte[:4096], delimiters=",;\t")
-        return list(csv.DictReader(io.StringIO(texte), dialect=dialecte))
+        if self.document_id:
+            with self.document.file.open("rb") as f:
+                texte = f.read().decode("utf-8-sig", "replace")
+        else:
+            r = requests.get(self.url_base, timeout=TIMEOUT)
+            r.raise_for_status()
+            texte = r.content.decode("utf-8-sig", "replace")
+        # Séparateur lu sur la seule ligne d'en-tête : le détecteur automatique échoue sur les textes longs.
+        entete = texte.split("\n", 1)[0]
+        sep = max(";,\t", key=entete.count)
+        return list(csv.DictReader(io.StringIO(texte), delimiter=sep))
 
     def _position(self, l):
         """(lat, lon) d'une ligne selon champ_geo, ou (None, None)."""
@@ -144,7 +152,7 @@ class SourceDonnees(index.Indexed, models.Model):
         for i, l in enumerate(lignes):
             ident = str(l.get(self.cle)) if self.cle and l.get(self.cle) is not None else \
                 hashlib.sha1(json.dumps(l, sort_keys=True, default=str).encode()).hexdigest()[:16]
-            texte = " ".join(str(v) for v in l.values() if v not in (None, ""))[:4000]
+            texte = " ".join(str(v) for v in l.values() if v not in (None, ""))[:20000]
             lat, lon = positions[i]
             objets.append(Ligne(source=self, rang=i, identifiant=ident, donnees=l, texte=texte, lat=lat, lon=lon))
         with transaction.atomic():

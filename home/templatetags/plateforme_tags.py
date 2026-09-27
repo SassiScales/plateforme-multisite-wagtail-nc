@@ -37,7 +37,8 @@ def lignes_en_direct(context, n=16):
 
 @register.simple_tag
 def sites_reseau():
-    return {"actifs": Site.objects.order_by("-is_default_site", "site_name"), "a_venir": A_VENIR}
+    actifs = [s for s in Site.objects.order_by("-is_default_site", "site_name") if not s.site_name.endswith("(ancien site, redirections)")]
+    return {"actifs": actifs, "a_venir": A_VENIR}
 
 
 @register.simple_tag(takes_context=True)
