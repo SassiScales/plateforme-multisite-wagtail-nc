@@ -1,2 +1,2 @@
 {% extends "base.html" %}{% load wagtailcore_tags %}
-{% block content %}{% include "home/_entete_page.html" %}<div class="cadre"><article class="large apparait">{% for b in page.corps %}{% include_block b %}{% endfor %}</article></div>{% endblock %}
+{% block content %}{% include "home/_entete_page.html" %}<div class="cadre"><article class="large apparait">{% for b in page.corps %}{% include_block b %}{% endfor %}{% include "home/_sous_pages.html" %}</article></div>{% endblock %}

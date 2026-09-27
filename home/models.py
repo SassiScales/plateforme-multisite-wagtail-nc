@@ -41,6 +41,29 @@ class EncadreBlock(blocks.StructBlock):
         template = "home/blocs/encadre.html"
 
 
+class FilBlock(blocks.StructBlock):
+    """Liste automatique des dernières publications (actualités, pages reprises) : rien à saisir, dates réelles."""
+    titre = blocks.CharBlock(default="Dernières publications")
+    rubrique = blocks.PageChooserBlock(required=False, help_text="Vide : tout le site")
+    nombre = blocks.IntegerBlock(default=6, min_value=3, max_value=24)
+
+    class Meta:
+        icon = "list-ul"
+        template = "home/blocs/fil.html"
+        label = "Fil de publications"
+
+    def get_context(self, value, parent_context=None):
+        ctx = super().get_context(value, parent_context)
+        page = (parent_context or {}).get("page")
+        racine = value["rubrique"] or (page.get_site().root_page if page else None)
+        qs = PageContenu.objects.none()
+        if racine:
+            qs = (PageContenu.objects.live().public().descendant_of(racine).exclude(pk=getattr(page, "pk", None))
+                  .filter(first_published_at__isnull=False).order_by("-first_published_at"))
+        ctx["publications"] = qs[: value["nombre"]]
+        return ctx
+
+
 CORPS = [
     ("alerte", AlerteBlock()),
     ("intertitre", blocks.CharBlock(icon="title", template="home/blocs/intertitre.html", label="Titre de section")),
@@ -48,6 +71,7 @@ CORPS = [
     ("encadre", EncadreBlock()),
     ("tableau", TableauBlock()),
     ("carte_communes", CarteCommunesBlock()),
+    ("fil", FilBlock()),
 ]
 
 PICTOS = [("", "Aucun"), ("douane", "Douane et commerce"), ("sante", "Santé"), ("emploi", "Emploi et concours"),
@@ -75,6 +99,15 @@ class PageContenu(RoutablePageMixin, Page):
 
     def get_template(self, request, *a, **k):
         return f"home/page_{self.gabarit}.html"
+
+    def get_context(self, request, *a, **k):
+        ctx = super().get_context(request, *a, **k)
+        if self.gabarit != "accueil":
+            from django.core.paginator import Paginator
+            enfants = PageContenu.objects.live().public().child_of(self).order_by("-first_published_at", "title")
+            if enfants.exists():
+                ctx["sous_pages"] = Paginator(enfants, 12).get_page(request.GET.get("page"))
+        return ctx
 
     def config_tableau(self, source_id):
         for b in self.corps:
@@ -114,6 +147,10 @@ class PageContenu(RoutablePageMixin, Page):
         """Données structurées schema.org (UC026) : la page, et un Dataset par tableau."""
         graph = [{"@type": "WebPage", "name": self.title, "description": self.chapo,
                   "dateModified": self.last_published_at.isoformat() if self.last_published_at else None}]
+        if self.depth > 3 and self.first_published_at:
+            graph.append({"@type": "Article", "headline": self.title[:110], "description": self.chapo,
+                          "datePublished": self.first_published_at.isoformat(),
+                          "publisher": {"@type": "GovernmentOrganization", "name": "Gouvernement de la Nouvelle-Calédonie"}})
         for b in self.corps:
             if b.block_type == "tableau":
                 s = b.value["source"]

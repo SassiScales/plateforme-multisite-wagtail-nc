@@ -1,0 +1,11 @@
+{% load wagtailcore_tags %}{% if sous_pages %}<section class="sous-pages" aria-labelledby="titre-sous-pages">
+  <h2 id="titre-sous-pages" class="titre-section">Dans cette rubrique <span class="compte">{{ sous_pages.paginator.count }} pages</span></h2>
+  <ul class="cartes-pages">{% for p in sous_pages %}
+    <li><a href="{% pageurl p %}">{% if p.first_published_at %}<time datetime="{{ p.first_published_at|date:'Y-m-d' }}">{{ p.first_published_at|date:"j F Y" }}</time>{% endif %}<strong>{{ p.title }}</strong>{% if p.chapo %}<span>{{ p.chapo|truncatechars:120 }}</span>{% endif %}</a></li>{% endfor %}
+  </ul>
+  {% if sous_pages.paginator.num_pages > 1 %}<nav class="pagination" aria-label="Pages de la rubrique">
+    {% if sous_pages.has_previous %}<a href="?page={{ sous_pages.previous_page_number }}#titre-sous-pages" rel="prev">← Précédentes</a>{% endif %}
+    <span>Page {{ sous_pages.number }} sur {{ sous_pages.paginator.num_pages }}</span>
+    {% if sous_pages.has_next %}<a href="?page={{ sous_pages.next_page_number }}#titre-sous-pages" rel="next">Suivantes →</a>{% endif %}
+  </nav>{% endif %}
+</section>{% endif %}

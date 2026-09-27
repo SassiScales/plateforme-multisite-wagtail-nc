@@ -204,6 +204,7 @@ class Command(BaseCommand):
 
         if not o["sans_lecture"]:
             call_command("lire_sources", "--toutes")
+        call_command("completer_demo")
         call_command("update_index")
         self.stdout.write(self.style.SUCCESS(
             f"\nDémo prête. http://gouv.localhost:{port}/  ·  http://drhfpnc.localhost:{port}/  ·  admin : http://gouv.localhost:{port}/admin/\n"

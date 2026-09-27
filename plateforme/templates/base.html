@@ -19,7 +19,8 @@
         {% include "embleme.svg" %}
         <span><strong>{{ site_courant.site_name|default:"gouv.nc" }}</strong><small>Gouvernement de la Nouvelle-Calédonie</small></span>
       </a>
-      <nav class="nav" aria-label="Menu principal">
+      <button class="nav-bouton" type="button" aria-expanded="false" aria-controls="menu-principal"><span aria-hidden="true"></span>Menu</button>
+      <nav class="nav" id="menu-principal" aria-label="Menu principal">
         <ul>{% for r in site_courant.root_page.get_children.live.in_menu|slice:":6" %}
           <li><a href="{% pageurl r %}"{% if page.rubrique_pk == r.pk %} aria-current="page"{% endif %}>{{ r.title }}</a></li>{% endfor %}
           <li><a class="nav-recherche" href="{% url 'search' %}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Rechercher</span></a></li>
@@ -28,7 +29,7 @@
     </div>
     <div class="lisere" aria-hidden="true"><span></span><span></span><span></span></div>
   </header>
-  <p class="bandeau-demo">Démonstration Sassi Scales LLC · consultation 2026-DINUM-52051 · habillage provisoire en attendant le design system du GNC · données de data.gouv.nc lues en direct</p>
+  <p class="bandeau-demo">Démonstration Sassi Scales LLC<span class="bandeau-long"> · consultation 2026-DINUM-52051 · habillage provisoire en attendant le design system du GNC</span> · données de data.gouv.nc en direct</p>
   <main id="contenu" tabindex="-1">
     {% if messages %}<div class="cadre"><div class="messages" role="status">{% for m in messages %}<p>{{ m }}</p>{% endfor %}</div></div>{% endif %}
     {% block content %}{% endblock %}

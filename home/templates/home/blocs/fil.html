@@ -1,0 +1,6 @@
+{% load wagtailcore_tags %}<section class="fil" aria-labelledby="fil-{{ block.id|default:'1' }}">
+  <h2 id="fil-{{ block.id|default:'1' }}" class="titre-section">{{ value.titre }}</h2>
+  {% if publications %}<ol class="fil-liste">{% for p in publications %}
+    <li><a href="{% pageurl p %}"><time datetime="{{ p.first_published_at|date:'Y-m-d' }}">{{ p.first_published_at|date:"j F Y" }}</time><strong>{{ p.title }}</strong>{% if p.chapo %}<span>{{ p.chapo|truncatechars:140 }}</span>{% endif %}<em>{{ p.get_parent.title }}</em></a></li>{% endfor %}
+  </ol>{% else %}<p>Aucune publication pour l'instant.</p>{% endif %}
+</section>

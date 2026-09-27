@@ -1,11 +1,16 @@
-{% extends "base.html" %}
-
-{% block title %}Page not found{% endblock %}
-
-{% block body_class %}template-404{% endblock %}
-
+{% extends "base.html" %}{% load wagtailcore_tags %}
+{% block title %}Page introuvable{% endblock %}
 {% block content %}
-<h1>Page not found</h1>
-
-<h2>Sorry, this page could not be found.</h2>
+<section class="bandeau-page"><div class="bandeau-lignes" aria-hidden="true">{% include "carte_nc.svg" %}</div><div class="cadre">
+  <p class="surtitre">Erreur 404</p>
+  <h1>Cette page n'existe pas ou a changé d'adresse</h1>
+  <p class="chapo">Les anciens sites du gouvernement sont regroupés sur cette plateforme : la plupart des anciennes adresses mènent automatiquement à la nouvelle page. Celle-ci n'a pas de correspondance.</p>
+</div></section>
+<div class="cadre"><div class="lecture introuvable">
+  <form class="recherche-page" action="{% url 'search' %}" method="get" role="search">
+    <label for="q-404">Chercher ce que vous veniez consulter</label>
+    <div><input id="q-404" name="query" type="search" placeholder="Un tarif, un médicament, une démarche…"><button type="submit">Rechercher</button></div>
+  </form>
+  <p><a href="/">Revenir à l'accueil</a> · <a href="https://service-public.nc">Vos démarches sur service-public.nc</a></p>
+</div></div>
 {% endblock %}

@@ -37,7 +37,7 @@
     <thead><tr>{% for ch, lib in colonnes %}<th scope="col"{% if tri == ch %} aria-sort="{% if ordre == 'desc' %}descending{% else %}ascending{% endif %}"{% endif %}><a class="tri" href="?tri={{ ch|urlencode }}&amp;ordre={% if tri == ch and ordre == 'asc' %}desc{% else %}asc{% endif %}{% if q %}&amp;q={{ q|urlencode }}{% endif %}{% if f %}&amp;f={{ f|urlencode }}{% endif %}#tableau-{{ source.pk }}">{{ lib }}<span aria-hidden="true">{% if tri == ch %}{% if ordre == 'desc' %} ↓{% else %} ↑{% endif %}{% else %} ↕{% endif %}</span></a></th>{% endfor %}<th scope="col"><span class="sr-only">Fiche</span></th></tr></thead>
     <tbody>
     {% for ligne, valeurs in rangees %}
-      <tr class="rangee" style="--i:{{ forloop.counter0 }}">{% for v in valeurs %}<td{% if forloop.first %} class="col-cle"{% endif %}>{{ v|default_if_none:"" }}</td>{% endfor %}
+      <tr class="rangee" style="--i:{{ forloop.counter0 }}">{% for v in valeurs %}<td{% if forloop.first %} class="col-cle"{% endif %}>{% if v|stringformat:"s"|length > 90 %}<span class="cel-longue" title="{{ v }}">{{ v }}</span>{% else %}{{ v|default_if_none:"" }}{% endif %}</td>{% endfor %}
         <td class="col-fiche">{% if page %}<a href="{% routablepageurl page 'ligne' source.pk ligne.identifiant %}" aria-label="Voir la fiche : {{ valeurs.0 }}">Fiche <span aria-hidden="true">→</span></a>{% endif %}</td></tr>
     {% empty %}
       <tr><td class="vide" colspan="{{ colonnes|length|add:1 }}">Aucune ligne ne correspond. Essayez un autre mot ou retirez le filtre.</td></tr>

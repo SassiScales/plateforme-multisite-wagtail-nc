@@ -28,7 +28,6 @@
 {% endif %}
 
 <div class="cadre">
-  {% for b in page.corps %}{% include_block b %}{% endfor %}
   {% with enfants=page.get_children.live.in_menu.specific %}{% if enfants %}
   <div class="section-tete"><p class="surtitre">Par besoin</p><h2 class="titre-section">Ce que vous venez chercher</h2></div>
   <ul class="tuiles">{% for e in enfants %}
@@ -40,6 +39,8 @@
     </a></li>{% endfor %}
   </ul>
   {% endif %}{% endwith %}
+
+  {% for b in page.corps %}{% include_block b %}{% endfor %}
 
   {% sites_reseau as reseau %}
   <section class="reseau apparait" aria-labelledby="titre-reseau">

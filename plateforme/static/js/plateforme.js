@@ -13,6 +13,8 @@
       entrees.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("vu"); io.unobserve(en.target); } });
     }, { rootMargin: "0px 0px -8% 0px" });
     els.forEach(function (e) { io.observe(e); });
+    // Filet de sécurité : rien ne reste masqué (capture pleine page, impression, défilement programmé).
+    setTimeout(function () { els.forEach(function (e) { e.classList.add("vu"); }); }, 1600);
   }
 
   function compter(el) {
@@ -68,6 +70,17 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     observer(Array.prototype.slice.call(document.querySelectorAll(".apparait")));
+    var bouton = document.querySelector(".nav-bouton"), nav = document.getElementById("menu-principal");
+    if (bouton && nav) {
+      bouton.addEventListener("click", function () {
+        var ouvert = bouton.getAttribute("aria-expanded") === "true";
+        bouton.setAttribute("aria-expanded", String(!ouvert));
+        nav.classList.toggle("ouverte", !ouvert);
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && nav.classList.contains("ouverte")) { bouton.click(); bouton.focus(); }
+      });
+    }
     document.querySelectorAll("[data-compte]").forEach(compter);
     document.querySelectorAll("[data-tableau]").forEach(filtreInstantane);
   });
