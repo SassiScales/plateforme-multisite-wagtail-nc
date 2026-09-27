@@ -53,6 +53,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "plateforme.middleware.CSPBackOffice",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -162,6 +164,27 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
 
 # Wagtail settings
+
+from django.utils.csp import CSP
+
+# Politique de sécurité du contenu (Django 6) : tout est servi par la plateforme elle-même.
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [CSP.SELF],
+    "style-src": [CSP.SELF, CSP.UNSAFE_INLINE],
+    "img-src": [CSP.SELF, "data:"],
+    "font-src": [CSP.SELF],
+    "connect-src": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
+    "base-uri": [CSP.SELF],
+    "object-src": [CSP.NONE],
+}
+# Aucun appel à un tiers depuis le back-office : pas d'avatars Gravatar, pas de vérification de version en ligne.
+WAGTAIL_GRAVATAR_PROVIDER_URL = None
+WAGTAIL_ENABLE_UPDATE_CHECK = False
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"
 
 WAGTAIL_SITE_NAME = "Plateforme GNC (démonstration)"
 WAGTAILADMIN_PERMITTED_LANGUAGES = [("fr", "Français")]

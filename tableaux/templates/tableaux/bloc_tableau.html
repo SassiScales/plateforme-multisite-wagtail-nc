@@ -5,7 +5,7 @@
     <p class="tableau-meta"><span class="pastille-direct" aria-hidden="true"></span>Données à jour · lues le {{ source.derniere_lecture|date:"d/m/Y à H:i" }} sur data.gouv.nc{% if source.licence %} · {{ source.licence }}{% endif %}</p>
   </div>
   {% if value.recherche %}
-  <form method="get" class="tableau-recherche" role="search" data-recherche-live>
+  <form method="get" action="{{ request.path }}#tableau-{{ source.pk }}" class="tableau-recherche" role="search" data-recherche-live>
     <label for="q-{{ source.pk }}">Filtrer les {{ source.nb_lignes|milliers }} lignes</label>
     <div class="champ-recherche">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>

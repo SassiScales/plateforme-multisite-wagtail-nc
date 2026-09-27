@@ -7,8 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% if page.full_url %}<link rel="canonical" href="{{ page.full_url }}">{% endif %}
   {% if page.json_ld %}<script type="application/ld+json">{{ page.json_ld|safe }}</script>{% endif %}
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Advent+Pro:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="{% static 'fonts/advent-pro-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/plateforme.css' %}">
   <script src="{% static 'js/plateforme.js' %}" defer></script>
 </head>

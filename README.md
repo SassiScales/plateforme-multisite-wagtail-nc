@@ -10,7 +10,9 @@ consultation 2026-DINUM-52051 du gouvernement de la Nouvelle-Calédonie. Elle fo
 |---|---|
 | Multi-site dans un seul back-office (UC003) | `gouv.localhost` et `drhfpnc.localhost` servis par la même instance |
 | Droits hérités dans l'arborescence (UC001, UC006) | groupes « Pôle communication » (tout) et « Éditeurs DRH » (drhfpnc seulement) |
-| Circuit de validation, brouillon, historique (UC004, UC019, UC020) | natifs Wagtail, actifs sur toutes les pages |
+| Circuit de validation, brouillon, historique (UC004, UC019, UC020) | natifs Wagtail ; circuit « Validation par un administrateur » actif sur toutes les pages |
+| Recherche du site dans les pages ET les lignes des tableaux (UC018, UC022) | page `/search/`, limitée aux données du site courant |
+| Filtre instantané des tableaux | pendant la frappe, sans rechargement ; formulaire classique sans JavaScript |
 | Éditeur guidé par blocs, mise en forme limitée, 3 gabarits (UC011, UC014, UC015) | modèle `PageContenu` |
 | Bandeau d'alerte non bloquant (UC008) | bloc « Bandeau d'alerte » |
 | Tableaux de données depuis data.gouv.nc, API REST ou CSV, sans code (UC010) | application `tableaux` |
@@ -21,6 +23,28 @@ consultation 2026-DINUM-52051 du gouvernement de la Nouvelle-Calédonie. Elle fo
 
 Jeux de données utilisés : chapitres du tarif douanier, prix des médicaments en vigueur (Sempex),
 assimilation des diplômes étrangers dans la fonction publique.
+
+## Direction artistique
+
+L'accueil est une carte marine vivante de la Nouvelle-Calédonie : le trait de côte vient de
+Natural Earth 1:10m (domaine public) et les lignes autour des îles sont des courbes de distance à
+la côte (3 à 40 km) calculées par `design/carte_nc.py` (NumPy, SciPy, scikit-image). Ce ne sont pas
+des profondeurs mesurées. Palette relevée sur gouv.nc (bleu lagon, turquoise, orange soleil),
+polices Advent Pro et Public Sans hébergées localement. L'emblème (nautile et pin colonnaire) est
+une création originale ; le logo officiel du gouvernement n'est pas utilisé.
+
+Animations (tracé des lignes, bandeau « en direct », exemples de recherche tapés, compteurs)
+toutes coupées lorsque l'utilisateur demande à réduire les mouvements (RGAA 13.8), et bandeau
+défilant avec bouton de pause.
+
+## Qualité vérifiée
+
+- **Accessibilité** : axe-core (WCAG 2.1 A et AA) sans aucune violation sur l'accueil, les pages à
+  tableau, la recherche et le site drhfpnc ; navigation clavier, lien d'évitement, contrastes AA.
+- **Sécurité** : politique de sécurité du contenu native de Django 6 (`script-src 'self'` sur le site
+  public), `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`.
+- **Aucun appel à un tiers** : polices locales, pas de Gravatar, pas de vérification de version en
+  ligne ; seules les API de data.gouv.nc sont interrogées, côté serveur.
 
 ## Lancer la démonstration
 
